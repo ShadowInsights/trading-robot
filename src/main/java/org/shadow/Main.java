@@ -18,6 +18,8 @@ public class Main {
   public static void main(String[] args) {
     logger.info("Starting application...");
 
+    var config = Config.load();
+
     var robot = new FakeRobot();
     var taskScheduler = new TaskScheduler(Executors.newScheduledThreadPool(1));
     var scheduler = new RobotScheduler(robot, 2, taskScheduler); // Logs every 2 seconds
