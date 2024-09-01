@@ -20,8 +20,8 @@ public class TaskScheduler {
     logger.debug("TaskScheduler initialized with a single-threaded executor service.");
   }
 
-  public void start(Runnable task, int intervalSeconds) {
-    logger.info("Starting task scheduler with an interval of {} seconds.", intervalSeconds);
+  public void start(Runnable task, long initialDelay, long interval, TimeUnit unit) {
+    logger.info("Starting task scheduler with an unit of {} with unit {}.", interval, unit);
     scheduledFuture =
         scheduler.scheduleAtFixedRate(
             () -> {
@@ -32,9 +32,9 @@ public class TaskScheduler {
                 logger.debug("Task execution is stopped; running flag is false.");
               }
             },
-            0,
-            intervalSeconds,
-            TimeUnit.SECONDS);
+            initialDelay,
+            interval,
+            unit);
     logger.info("Task scheduler started.");
   }
 
