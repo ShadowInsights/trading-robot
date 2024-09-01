@@ -32,6 +32,7 @@ public class RobotManager {
     robotSchedulers.forEach(RobotScheduler::stop);
 
     executorService.shutdown();
+    // TODO: executorServiceTerminationTimeout should be configured from contractor
     final var executorServiceTerminationTimeout = 10;
     var terminationResult =
         executorService.awaitTermination(executorServiceTerminationTimeout, TimeUnit.SECONDS);

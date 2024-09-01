@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.typesafe:config:1.4.2'
+    implementation 'com.typesafe:config:1.4.3'
     implementation platform('org.apache.logging.log4j:log4j-bom:2.23.1')
     implementation 'org.apache.logging.log4j:log4j-api'
 
@@ -32,4 +32,10 @@ spotless {
         googleJavaFormat() // Use Google's Java formatter
         target 'src/**/*.java' // Specify which files to format
     }
+}
+
+tasks.register('runDev', JavaExec) {
+    mainClass = 'org.shadow.Main' // Replace with your actual main class name
+    classpath = sourceSets.main.runtimeClasspath
+    jvmArgs = ['-Dconfig.file=src/main/resources/application.conf.dev']
 }

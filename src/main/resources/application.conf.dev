@@ -1,0 +1,17 @@
+exchange {
+  type = "FAKE"
+  apiKey = "dev-api-key"
+  apiSecret = "dev-api-secret"
+}
+
+robots = [
+  {
+    type = "SINGLE_POSITION"
+    unit = "SECONDS"
+    interval = 1
+    symbol = "BTC/USD"
+    allowedOrderPercentageFromDeposit = 0.1
+    allowedOrderFuturesMultiplier = 1
+    stopLossRequiredPercentage = 0.05
+  }
+]
