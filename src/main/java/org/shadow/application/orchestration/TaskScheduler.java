@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 public class TaskScheduler {
 
-  private static final Logger logger = LogManager.getLogger(TaskScheduler.class);
+  private final Logger logger = LogManager.getLogger(TaskScheduler.class);
 
   private final ScheduledExecutorService scheduler;
   private ScheduledFuture<?> scheduledFuture;
@@ -20,8 +20,9 @@ public class TaskScheduler {
     logger.debug("TaskScheduler initialized with a single-threaded executor service.");
   }
 
-  public void start(Runnable task, long initialDelay, long interval, TimeUnit unit) {
-    logger.info("Starting task scheduler with an unit of {} with unit {}.", interval, unit);
+  public void start(Runnable task, long initialDelay, long interval) {
+    logger.info(
+        "Starting task scheduler with an interval of {} with delay {}.", interval, initialDelay);
     scheduledFuture =
         scheduler.scheduleAtFixedRate(
             () -> {
@@ -34,7 +35,7 @@ public class TaskScheduler {
             },
             initialDelay,
             interval,
-            unit);
+            TimeUnit.MILLISECONDS);
     logger.info("Task scheduler started.");
   }
 

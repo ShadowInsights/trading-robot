@@ -11,7 +11,7 @@ import org.shadow.domain.client.model.OrderType;
 
 public class FakeExchangeOrderClient implements ExchangeOrderClient {
 
-  private static final Logger logger = LogManager.getLogger(FakeExchangeOrderClient.class);
+  private final Logger logger = LogManager.getLogger(FakeExchangeOrderClient.class);
   private static long orderIdCounter = 1;
 
   @Override

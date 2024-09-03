@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 public class RobotManager {
 
-  private static final Logger logger = LogManager.getLogger(RobotManager.class);
+  private final Logger logger = LogManager.getLogger(RobotManager.class);
 
   private final List<RobotScheduler> robotSchedulers;
   private final ExecutorService executorService;
@@ -19,17 +19,19 @@ public class RobotManager {
   }
 
   public void start() {
-    robotSchedulers.forEach(
-        scheduler -> {
-          logger.debug("Starting robot scheduler: {}", scheduler);
-          executorService.submit(scheduler::start);
-        });
+    robotSchedulers.stream()
+        .parallel()
+        .forEach(
+            scheduler -> {
+              logger.debug("Starting robot scheduler: {}", scheduler);
+              executorService.submit(scheduler::start);
+            });
     logger.info("All robot schedulers have been started.");
   }
 
   public void stop() throws InterruptedException {
     logger.info("Stopping robot schedulers...");
-    robotSchedulers.forEach(RobotScheduler::stop);
+    robotSchedulers.stream().parallel().forEach(RobotScheduler::stop);
 
     executorService.shutdown();
     // TODO: executorServiceTerminationTimeout should be configured from contractor

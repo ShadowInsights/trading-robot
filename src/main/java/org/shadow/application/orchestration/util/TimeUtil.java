@@ -1,27 +1,20 @@
 package org.shadow.application.orchestration.util;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 
 public class TimeUtil {
 
   private TimeUtil() {}
 
-  public static long calculateInitialDelay(long interval, TimeUnit unit) {
-    var now = Instant.now();
-    var nextInterval = calculateNextInterval(now, interval, unit);
+  public static long calculateInitialDelayUntilNextPeriod(long period, TimeUnit unit) {
+    if (period <= 0) {
+      throw new IllegalArgumentException("Period must be greater than zero");
+    }
 
-    var delayInMillis = Duration.between(now, nextInterval).toMillis();
-    return unit.convert(delayInMillis, TimeUnit.MILLISECONDS);
-  }
+    var currentTime = TimeProvider.currentTimeMillis();
+    var periodMillis = TimeUnit.MILLISECONDS.convert(period, unit);
+    var nextTimeFrame = ((currentTime / periodMillis) + 1) * periodMillis;
 
-  private static Instant calculateNextInterval(Instant current, long interval, TimeUnit unit) {
-    var intervalMillis = unit.toMillis(interval);
-    var currentMillis = current.toEpochMilli();
-
-    var nextIntervalMillis = ((currentMillis / intervalMillis) + 1) * intervalMillis;
-
-    return Instant.ofEpochMilli(nextIntervalMillis);
+    return nextTimeFrame - currentTime;
   }
 }

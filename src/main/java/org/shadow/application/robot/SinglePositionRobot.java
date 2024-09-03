@@ -16,8 +16,8 @@ import org.shadow.domain.client.model.Order;
 
 public class SinglePositionRobot implements Robot {
 
-  private static final List<Bar> bars = new LinkedList<>();
-  private static final Logger logger = LogManager.getLogger(SinglePositionRobot.class);
+  private final List<Bar> bars = new LinkedList<>();
+  private final Logger logger = LogManager.getLogger(SinglePositionRobot.class);
 
   private final RobotTimeframe robotTimeframe;
   private final BarsCollectorClient barsCollectorClient;
@@ -72,6 +72,7 @@ public class SinglePositionRobot implements Robot {
 
   @Override
   public void stop() {
+    // TODO: Implement logic
     logger.info("Stopping robot. Current position state: {}", robotPositionState);
   }
 
@@ -147,7 +148,7 @@ public class SinglePositionRobot implements Robot {
                         bar.time(), bar.open(), bar.high(), bar.low(), bar.close(), bar.volume()))
             .toList();
     bars.addAll(collectedBars);
-    logger.debug("Bars collected from {} to {}: {}", timeFrom, timeTo, collectedBars);
+    logger.info("Bars collected from {} to {}: {}", timeFrom, timeTo, bars.size());
   }
 
   private RobotPositionHandler<SinglePositionRobot> getPositionHandler() {
