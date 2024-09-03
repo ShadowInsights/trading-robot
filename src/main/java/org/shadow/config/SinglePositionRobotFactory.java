@@ -16,12 +16,12 @@ import org.shadow.domain.client.ExchangeOrderClient;
 public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRobot> {
 
   // TODO: Make constants below configurable
-  private static final int NOT_READY_MULTIPLIER = 0;
-  private static final int MINOR_MULTIPLIER = 1;
-  private static final int MEDIUM_MULTIPLIER = 2;
-  private static final int MAJOR_MULTIPLIER = 3;
+  public static final int NOT_READY_MULTIPLIER = 0;
+  public static final int MINOR_MULTIPLIER = 1;
+  public static final int MEDIUM_MULTIPLIER = 2;
+  public static final int MAJOR_MULTIPLIER = 3;
 
-  private static final int RSI_EXPLORER_PERIOD = 1;
+  public static final int RSI_EXPLORER_PERIOD = 1;
 
   @Override
   public SinglePositionRobot createRobot(

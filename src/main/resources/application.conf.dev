@@ -8,7 +8,7 @@ robots = [
   {
     type = "SINGLE_POSITION"
     unit = "SECONDS"
-    interval = 1
+    interval = 15
     symbol = "BTC/USD"
     allowedOrderPercentageFromDeposit = 0.1
     allowedOrderFuturesMultiplier = 1

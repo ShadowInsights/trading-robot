@@ -10,7 +10,7 @@ import org.shadow.domain.client.model.Bar;
 
 public class FakeBarsCollectorClient implements BarsCollectorClient {
 
-  private static final Logger logger = LogManager.getLogger(FakeBarsCollectorClient.class);
+  private final Logger logger = LogManager.getLogger(FakeBarsCollectorClient.class);
 
   @Override
   public void init() {

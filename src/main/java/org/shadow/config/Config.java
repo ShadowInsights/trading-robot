@@ -16,14 +16,12 @@ public record Config(
   public static Config load() {
     var config = ConfigFactory.load();
 
-    // Load Exchange Configuration
     var exchangeConfig =
         new ExchangeConfiguration(
             ExchangeConfigurationType.valueOf(config.getString("exchange.type")),
-            config.getString("exchange.apiKey"), // Use values directly from config
+            config.getString("exchange.apiKey"),
             config.getString("exchange.apiSecret"));
 
-    // Load Robot Configurations
     var robotConfigs =
         config.getConfigList("robots").stream()
             .map(
