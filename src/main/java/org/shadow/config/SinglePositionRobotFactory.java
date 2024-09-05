@@ -4,6 +4,7 @@ import java.util.EnumMap;
 import java.util.List;
 import org.shadow.application.robot.RobotTimeframe;
 import org.shadow.application.robot.SinglePositionRobot;
+import org.shadow.application.robot.blocker.ATRBlocker;
 import org.shadow.application.robot.blocker.Blocker;
 import org.shadow.application.robot.explorer.BinaryExplorer;
 import org.shadow.application.robot.explorer.RSIBinaryExplorer;
@@ -21,7 +22,12 @@ public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRo
   public static final int MEDIUM_MULTIPLIER = 2;
   public static final int MAJOR_MULTIPLIER = 3;
 
-  public static final int RSI_EXPLORER_PERIOD = 1;
+  public static final int RSI_EXPLORER_SEVERITY = 1;
+  // Valid only for 1-minute timeframe
+  public static final int RSI_EXPLORER_PERIOD = 7;
+
+  // Valid only for 1-minute timeframe
+  private static final int ATR_BLOCKER_PERIOD = 7;
 
   @Override
   public SinglePositionRobot createRobot(
@@ -51,8 +57,9 @@ public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRo
     binaryIsMomentumExplorationStateIntegerMultiplierMap.put(
         BinaryIsMomentumExplorationState.MAJOR, MAJOR_MULTIPLIER);
 
-    var binaryExplorers = List.<BinaryExplorer>of(new RSIBinaryExplorer(RSI_EXPLORER_PERIOD));
-    var blockers = List.<Blocker>of();
+    var binaryExplorers =
+        List.<BinaryExplorer>of(new RSIBinaryExplorer(RSI_EXPLORER_SEVERITY, RSI_EXPLORER_PERIOD));
+    var blockers = List.<Blocker>of(new ATRBlocker(ATR_BLOCKER_PERIOD));
     var binaryStrategy =
         new BinaryStrategy(
             binaryExplorers,
