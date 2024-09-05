@@ -26,6 +26,7 @@ public class Main {
 
   public static void main(String[] args) {
     logger.info("Starting application...");
+    logger.warn("Robot must be used only with 1 minute time frame in production mode");
 
     // Load configuration
     final var config = Config.load();
