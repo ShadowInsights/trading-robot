@@ -8,6 +8,7 @@ public class InSinglePositionHandler implements RobotPositionHandler<SinglePosit
     if (robot
         .getStrategy()
         .isTimeToClosePositionInAdvance(robot.getBars(), robot.getPositions().getFirst())) {
+      // TODO: Should be opened new position
       robot.getExchangeOrderClient().closeOrder(robot.getOrder());
       robot.getLogger().info("Closed order: {}", robot.getOrder());
       robot.setPosition(null);
