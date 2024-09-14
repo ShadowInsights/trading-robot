@@ -43,6 +43,7 @@ jobs:
 
   commitlint:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -59,6 +60,11 @@ jobs:
         run: |
           echo '{"extends": ["@commitlint/config-conventional"]}' > .commitlintrc.json
 
-      - name: Run Commitlint on pull request commits
+      - name: Check commit messages
         run: |
           git log origin/main..HEAD --pretty=format:'%s' | npx commitlint --verbose
+
+      - name: Check PR title
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "$PR_TITLE" | npx commitlint --verbose
