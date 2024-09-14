@@ -50,7 +50,7 @@ public class SinglePositionRobot implements Robot {
   }
 
   @Override
-  public void init() {
+  public synchronized void init() {
     // TODO: Load open position from exchangeOrderClient when position loading implemented
     position = null;
     robotPositionState = RobotPositionState.EXPLORING;
@@ -60,7 +60,7 @@ public class SinglePositionRobot implements Robot {
   }
 
   @Override
-  public void run() {
+  public synchronized void run() {
     try {
       collectBars();
       logger.debug("Collected bars: {}", bars);
