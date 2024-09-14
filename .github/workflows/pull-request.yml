@@ -40,3 +40,25 @@ jobs:
         with:
           name: test-reports
           path: build/reports/tests/test
+
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Commitlint
+        run: npm install --save-dev @commitlint/{config-conventional,cli}
+
+      - name: Create Commitlint config
+        run: |
+          echo '{"extends": ["@commitlint/config-conventional"]}' > .commitlintrc.json
+
+      - name: Run Commitlint on pull request commits
+        run: |
+          git log origin/main..HEAD --pretty=format:'%s' | npx commitlint --verbose
