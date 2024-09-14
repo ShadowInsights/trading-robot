@@ -9,17 +9,17 @@ import org.shadow.application.robot.indicator.RSIIndicator;
 public class RSIBinaryExplorer implements BinaryExplorer {
 
   // TODO: Make constants below configurable
-  // Valid only for 1 minute timeframe
+  // Valid only for 1-minute timeframe
   private static final double RSI_OVERSOLD_THRESHOLD = 25.0;
-  // Valid only for 1 minute timeframe
+  // Valid only for 1-minute timeframe
   private static final double RSI_OVERBOUGHT_THRESHOLD = 75.0;
-  // Valid only for 1 minute timeframe
+  // Valid only for 1-minute timeframe
   private static final double RSI_LONG_MEDIUM_THRESHOLD = 35.0;
-  // Valid only for 1 minute timeframe
+  // Valid only for 1-minute timeframe
   private static final double RSI_SHORT_MEDIUM_THRESHOLD = 65.0;
-  // Valid only for 1 minute timeframe
+  // Valid only for 1-minute timeframe
   private static final double RSI_LONG_MINOR_THRESHOLD = 45.0;
-  // Valid only for 1 minute timeframe
+  // Valid only for 1-minute timeframe
   private static final double RSI_SHORT_MINOR_THRESHOLD = 55.0;
 
   private final Integer severity;
@@ -36,8 +36,8 @@ public class RSIBinaryExplorer implements BinaryExplorer {
       return BinaryIsMomentumExplorationState.NOT_READY;
     }
 
-    double[] prices = extractClosingPrices(bars);
-    double rsi = rsiIndicator.calculate(prices);
+    var prices = extractClosingPrices(bars);
+    var rsi = rsiIndicator.calculate(prices);
 
     return evaluateLongState(rsi);
   }
@@ -48,8 +48,8 @@ public class RSIBinaryExplorer implements BinaryExplorer {
       return BinaryIsMomentumExplorationState.NOT_READY;
     }
 
-    double[] prices = extractClosingPrices(bars);
-    double rsi = rsiIndicator.calculate(prices);
+    var prices = extractClosingPrices(bars);
+    var rsi = rsiIndicator.calculate(prices);
 
     return evaluateShortState(rsi);
   }
