@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 21
         uses: actions/setup-java@v3
@@ -47,6 +49,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all branches
+        run: git fetch --all
 
       - name: Install Node.js
         uses: actions/setup-node@v3
@@ -62,6 +69,7 @@ jobs:
 
       - name: Check commit messages
         run: |
+          git fetch origin main
           git log origin/main..HEAD --pretty=format:'%s' | npx commitlint --verbose
 
       - name: Check PR title
