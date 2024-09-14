@@ -13,7 +13,7 @@ class ATRBlockerTest {
 
   @Test
   void testLowVolatilityBlocking() {
-    var bars = generateBarsWithConstantPrice(100.0, 7);
+    var bars = generateBarsWithConstantPrice();
     var atrBlocker = new ATRBlocker(7);
     var shouldBlock = atrBlocker.isMomentumToBlocking(bars);
     assertTrue(shouldBlock, "Trading should be blocked due to low volatility.");
@@ -21,7 +21,7 @@ class ATRBlockerTest {
 
   @Test
   void testHighVolatilityBlocking() {
-    var bars = generateBarsWithHighVolatility(100.0, 7);
+    var bars = generateBarsWithHighVolatility();
     var atrBlocker = new ATRBlocker(7);
     var shouldBlock = atrBlocker.isMomentumToBlocking(bars);
     assertTrue(shouldBlock, "Trading should be blocked due to high volatility.");
@@ -29,7 +29,7 @@ class ATRBlockerTest {
 
   @Test
   void testNormalVolatilityNotBlocking() {
-    var bars = generateBarsWithNormalVolatility(100.0, 7);
+    var bars = generateBarsWithNormalVolatility(7);
     var atrBlocker = new ATRBlocker(7);
     var shouldBlock = atrBlocker.isMomentumToBlocking(bars);
     assertFalse(shouldBlock, "Trading should not be blocked under normal volatility.");
@@ -37,10 +37,10 @@ class ATRBlockerTest {
 
   @Test
   void testInsufficientData() {
-    var bars = generateBarsWithNormalVolatility(100.0, 5);
+    var bars = generateBarsWithNormalVolatility(5);
     var atrBlocker = new ATRBlocker(7);
     var shouldBlock = atrBlocker.isMomentumToBlocking(bars);
-    assertFalse(shouldBlock, "Trading should not be blocked due to insufficient data.");
+    assertTrue(shouldBlock, "Trading should be blocked due to insufficient data.");
   }
 
   @Test
@@ -48,28 +48,28 @@ class ATRBlockerTest {
     var bars = new ArrayList<Bar>();
     var atrBlocker = new ATRBlocker(7);
     var shouldBlock = atrBlocker.isMomentumToBlocking(bars);
-    assertFalse(shouldBlock, "Trading should not be blocked when bars list is empty.");
+    assertTrue(shouldBlock, "Trading should be blocked when bars list is empty.");
   }
 
   @Test
   void testNullBarsList() {
     var atrBlocker = new ATRBlocker(7);
     var shouldBlock = atrBlocker.isMomentumToBlocking(null);
-    assertFalse(shouldBlock, "Trading should not be blocked when bars list is null.");
+    assertTrue(shouldBlock, "Trading should be blocked when bars list is null.");
   }
 
-  private java.util.List<Bar> generateBarsWithConstantPrice(double price, int count) {
+  private java.util.List<Bar> generateBarsWithConstantPrice() {
     var bars = new ArrayList<Bar>();
-    for (int i = 0; i < count; i++) {
-      bars.add(createBar(price, price, price, price));
+    for (int i = 0; i < 7; i++) {
+      bars.add(createBar(100.0, 100.0, 100.0, 100.0));
     }
     return bars;
   }
 
-  private java.util.List<Bar> generateBarsWithHighVolatility(double basePrice, int count) {
+  private java.util.List<Bar> generateBarsWithHighVolatility() {
     var bars = new ArrayList<Bar>();
-    var price = basePrice;
-    for (int i = 0; i < count; i++) {
+    var price = 100.0;
+    for (int i = 0; i < 7; i++) {
       var high = price + (price * 0.3 / 100);
       var low = price - (price * 0.3 / 100);
       var close = price + (Math.random() - 0.5) * (price * 0.6 / 100);
@@ -79,9 +79,9 @@ class ATRBlockerTest {
     return bars;
   }
 
-  private java.util.List<Bar> generateBarsWithNormalVolatility(double basePrice, int count) {
+  private java.util.List<Bar> generateBarsWithNormalVolatility(int count) {
     var bars = new ArrayList<Bar>();
-    var price = basePrice;
+    var price = 100.0;
     for (int i = 0; i < count; i++) {
       var high = price + (price * 0.1 / 100);
       var low = price - (price * 0.1 / 100);

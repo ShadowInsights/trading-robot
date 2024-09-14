@@ -35,7 +35,7 @@ public class ATRBlocker implements Blocker {
   public boolean isMomentumToBlocking(List<Bar> bars) {
     if (bars == null || bars.isEmpty()) {
       logger.warn("Bars list is null or empty");
-      return false;
+      return true;
     }
 
     var length = bars.size();
@@ -55,14 +55,14 @@ public class ATRBlocker implements Blocker {
       atrValues = atrIndicator.calculate(highs, lows, closes);
     } catch (InsufficientDataException e) {
       logger.warn("Insufficient data to calculate ATR: {}", e.getMessage());
-      return false;
+      return true;
     }
 
     var latestAtr = atrValues.getLast();
 
     if (latestAtr == null) {
       logger.warn("Could not compute ATR, insufficient data");
-      return false;
+      return true;
     }
 
     var latestClose = closes[closes.length - 1];
