@@ -72,7 +72,13 @@ jobs:
           git fetch origin main
           git log origin/main..HEAD --pretty=format:'%s' | npx commitlint --verbose
 
-      - name: Check PR title
+      - name: Get latest PR title
+        id: pr-title
+        uses: actions/github-script@v6
+        with:
+          script: return github.event.pull_request.title
+
+      - name: Check PR title with Commitlint
         run: |
-          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_TITLE="${{ steps.pr-title.outputs.result }}"
           echo "$PR_TITLE" | npx commitlint --verbose
