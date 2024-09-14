@@ -1,4 +1,4 @@
-package org.shadow.infrastructure.fake;
+package org.shadow.infrastructure.client.fake;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -15,7 +15,7 @@ public class FakeExchangeOrderClient implements ExchangeOrderClient {
   private static long orderIdCounter = 1;
 
   @Override
-  public void init() {
+  public synchronized void init() {
     logger.info("Initializing FakeExchangeOrderClient...");
   }
 

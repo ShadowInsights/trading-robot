@@ -3,6 +3,7 @@ package org.shadow.config;
 import com.typesafe.config.ConfigFactory;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.shadow.config.model.ExchangeConfiguration;
 import org.shadow.config.model.ExchangeConfigurationType;
@@ -36,7 +37,8 @@ public record Config(
                                 robotConfig.getDouble("allowedOrderPercentageFromDeposit")),
                             robotConfig.getInt("allowedOrderFuturesMultiplier"),
                             BigDecimal.valueOf(
-                                robotConfig.getDouble("stopLossRequiredPercentage")))))
+                                robotConfig.getDouble("stopLossRequiredPercentage"))),
+                        Optional.of(robotConfig.getString("historicalDataFile"))))
             .toList();
 
     return new Config(robotConfigs, exchangeConfig);

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.shadow.application.robot.explorer.RSIBinaryExplorer;
 import org.shadow.application.robot.explorer.model.BinaryIsMomentumExplorationState;
 import org.shadow.application.robot.strategy.BinaryStrategy;
+import org.shadow.config.factory.SinglePositionRobotFactory;
 import org.shadow.config.model.OrderConfiguration;
 import org.shadow.config.model.RobotConfiguration;
 import org.shadow.domain.client.BarsCollectorClient;

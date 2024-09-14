@@ -61,13 +61,17 @@ public class SinglePositionRobot implements Robot {
 
   @Override
   public void run() {
-    collectBars();
-    logger.debug("Collected bars: {}", bars);
+    try {
+      collectBars();
+      logger.debug("Collected bars: {}", bars);
 
-    var handler = getPositionHandler();
-    handler.handle(this);
+      var handler = getPositionHandler();
+      handler.handle(this);
 
-    logger.info("Position state after run: {}", robotPositionState);
+      logger.info("Position state after run: {}", robotPositionState);
+    } catch (Exception e) {
+      logger.error("Failed to execute robot cycle", e);
+    }
   }
 
   @Override

@@ -1,4 +1,4 @@
-package org.shadow.config;
+package org.shadow.config.factory;
 
 import java.util.EnumMap;
 import java.util.List;
