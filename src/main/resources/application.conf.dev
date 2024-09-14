@@ -13,5 +13,6 @@ robots = [
     allowedOrderPercentageFromDeposit = 0.1
     allowedOrderFuturesMultiplier = 1
     stopLossRequiredPercentage = 0.05
+    historicalDataFile = "BTCUSDT_1m_2024-03-01-00:00:00_2024-06-01-00:00:00.json"
   }
 ]

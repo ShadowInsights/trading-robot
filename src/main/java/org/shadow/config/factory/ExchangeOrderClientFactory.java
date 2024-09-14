@@ -1,4 +1,4 @@
-package org.shadow.config;
+package org.shadow.config.factory;
 
 import org.shadow.config.model.ExchangeConfiguration;
 import org.shadow.domain.client.ExchangeOrderClient;

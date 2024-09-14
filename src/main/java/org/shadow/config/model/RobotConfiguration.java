@@ -1,5 +1,6 @@
 package org.shadow.config.model;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public record RobotConfiguration(
@@ -7,4 +8,5 @@ public record RobotConfiguration(
     TimeUnit unit,
     long interval,
     String symbol,
-    OrderConfiguration orderConfiguration) {}
+    OrderConfiguration orderConfiguration,
+    Optional<String> historicalDataFile) {}
