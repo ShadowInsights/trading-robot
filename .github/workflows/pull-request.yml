@@ -2,6 +2,7 @@ name: Tests and Linting
 
 on:
   pull_request:
+    types: [assigned, edited, opened, synchronize, reopened]
     branches:
       - main
 
@@ -72,19 +73,7 @@ jobs:
           git fetch origin main
           git log origin/main..HEAD --pretty=format:'%s' | npx commitlint --verbose
 
-      - name: Get latest PR title using GitHub API
-        id: pr-title
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const pr = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number
-            });
-            return pr.data.title;
-
-      - name: Check PR title with Commitlint
+      - name: Check PR title
         run: |
-          PR_TITLE="${{ steps.pr-title.outputs.result }}"
+          PR_TITLE="${{ github.event.pull_request.title }}"
           echo "$PR_TITLE" | npx commitlint --verbose
