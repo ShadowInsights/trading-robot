@@ -33,7 +33,7 @@ test {
 
 spotless {
     java {
-        googleJavaFormat() // Use Google's Java formatter
+        googleJavaFormat('1.17.0') // Use Google's Java formatter
         target 'src/**/*.java' // Specify which files to format
     }
 }
