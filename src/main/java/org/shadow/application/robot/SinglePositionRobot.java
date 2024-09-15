@@ -50,7 +50,7 @@ public class SinglePositionRobot implements Robot {
   }
 
   @Override
-  public void init() {
+  public synchronized void init() {
     // TODO: Load open position from exchangeOrderClient when position loading implemented
     position = null;
     robotPositionState = RobotPositionState.EXPLORING;
@@ -60,14 +60,18 @@ public class SinglePositionRobot implements Robot {
   }
 
   @Override
-  public void run() {
-    collectBars();
-    logger.debug("Collected bars: {}", bars);
+  public synchronized void run() {
+    try {
+      collectBars();
+      logger.debug("Collected bars: {}", bars);
 
-    var handler = getPositionHandler();
-    handler.handle(this);
+      var handler = getPositionHandler();
+      handler.handle(this);
 
-    logger.info("Position state after run: {}", robotPositionState);
+      logger.info("Position state after run: {}", robotPositionState);
+    } catch (Exception e) {
+      logger.error("Failed to execute robot cycle", e);
+    }
   }
 
   @Override

@@ -18,6 +18,8 @@ import org.shadow.application.robot.strategy.model.BinaryPositionMomentumActionT
 public class BinaryStrategy implements Strategy<BinaryPositionMomentum> {
 
   private static final Logger logger = LogManager.getLogger(BinaryStrategy.class);
+  private static final String CALCULATING_SEVERITY_DIFFERENCE =
+      "Calculating severity difference: {}";
 
   private final List<BinaryExplorer> binaryExplorers;
   private final List<Blocker> blockers;
@@ -49,7 +51,7 @@ public class BinaryStrategy implements Strategy<BinaryPositionMomentum> {
     }
 
     var severityDifference = calculateSeverityDifference(bars);
-    logger.debug("Calculated severity difference: {}", severityDifference);
+    logger.debug(CALCULATING_SEVERITY_DIFFERENCE, severityDifference);
 
     if (severityDifference > 0) {
       var stopLoss = calculateStopLoss(PositionType.LONG, bars);
@@ -78,7 +80,7 @@ public class BinaryStrategy implements Strategy<BinaryPositionMomentum> {
     }
 
     var severityDifference = calculateSeverityDifference(bars);
-    logger.debug("Calculated severity difference: {}", severityDifference);
+    logger.debug(CALCULATING_SEVERITY_DIFFERENCE, severityDifference);
 
     if (position.type() == PositionType.LONG && severityDifference < 0) {
       logger.info("Long position and severity difference is negative; close in advance");
@@ -129,12 +131,12 @@ public class BinaryStrategy implements Strategy<BinaryPositionMomentum> {
     }
 
     int severityDifference = longVotingPower - shortVotingPower;
-    logger.debug("Calculated severity difference: {}", severityDifference);
+    logger.debug(CALCULATING_SEVERITY_DIFFERENCE, severityDifference);
     return severityDifference;
   }
 
   private BigDecimal calculateStopLoss(PositionType positionType, List<Bar> bars) {
-    var latestClosePrice = bars.get(bars.size() - 1).close();
+    var latestClosePrice = bars.getLast().close();
     var stopLossAdjustment = latestClosePrice.multiply(stopLossRequiredPercentage);
     BigDecimal stopLoss;
 

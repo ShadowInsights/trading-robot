@@ -3,6 +3,7 @@ package org.shadow.application.robot.indicator;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
+import org.shadow.application.robot.indicator.exception.InsufficientDataException;
 
 class RSIIndicatorTest {
 
@@ -17,7 +18,7 @@ class RSIIndicatorTest {
     var rsi = rsiIndicator.calculate(prices);
 
     assertNotNull(rsi);
-    assertTrue(rsi >= 0 && rsi <= 100, "RSI should be in the range 0 to 100");
+    assertEquals(53.69, rsi, 0.01);
   }
 
   @Test
@@ -26,7 +27,7 @@ class RSIIndicatorTest {
     var rsiIndicator = new RSIIndicator(14);
 
     assertThrows(
-        IllegalArgumentException.class,
+        InsufficientDataException.class,
         () -> rsiIndicator.calculate(prices),
         "Should throw exception for not enough data");
   }
@@ -68,7 +69,7 @@ class RSIIndicatorTest {
     var rsi = rsiIndicator.calculate(prices);
 
     assertNotNull(rsi);
-    assertTrue(rsi >= 0 && rsi <= 100, "RSI should be in the range 0 to 100");
+    assertEquals(75.0, rsi, 0.01);
   }
 
   @Test
@@ -80,7 +81,7 @@ class RSIIndicatorTest {
     var rsiIndicator = new RSIIndicator(16);
 
     assertThrows(
-        IllegalArgumentException.class,
+        InsufficientDataException.class,
         () -> rsiIndicator.calculate(prices),
         "Should throw exception for period too short");
   }
