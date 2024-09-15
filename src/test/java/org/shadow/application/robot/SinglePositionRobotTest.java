@@ -4,13 +4,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -157,13 +157,39 @@ class SinglePositionRobotTest {
     assertEquals(RobotPositionState.IN_POSITION, getPrivateRobotPositionState(robot));
   }
 
+  @Test
+  void testIsRunningInitialValue() {
+    robot.init();
+
+    assertFalse(getPrivateIsRunning(robot), "isRunning should be false after initialization");
+  }
+
+  @Test
+  void testRunMethodResetsIsRunning() {
+    robot.init();
+    robot.run();
+
+    assertFalse(getPrivateIsRunning(robot), "isRunning should be false after run execution");
+  }
+
   private RobotPositionState getPrivateRobotPositionState(SinglePositionRobot robot) {
     try {
-      Field field = SinglePositionRobot.class.getDeclaredField("robotPositionState");
+      var field = SinglePositionRobot.class.getDeclaredField("robotPositionState");
       field.setAccessible(true);
       return (RobotPositionState) field.get(robot);
     } catch (NoSuchFieldException | IllegalAccessException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private boolean getPrivateIsRunning(SinglePositionRobot robot) {
+    try {
+      var field = SinglePositionRobot.class.getDeclaredField("isRunning");
+      field.setAccessible(true);
+      var isRunning = (AtomicBoolean) field.get(robot);
+      return isRunning.get();
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new RuntimeException("Failed to access isRunning field via reflection", e);
     }
   }
 }

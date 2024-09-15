@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,6 +19,7 @@ import org.shadow.domain.client.model.Order;
 public class SinglePositionRobot implements Robot {
 
   private final Logger logger = LogManager.getLogger(SinglePositionRobot.class);
+  private final AtomicBoolean isRunning = new AtomicBoolean(false);
 
   private final RobotTimeframe robotTimeframe;
   private final BarsCollectorClient barsCollectorClient;
@@ -75,7 +77,12 @@ public class SinglePositionRobot implements Robot {
   }
 
   @Override
-  public synchronized void run() {
+  public void run() {
+    if (!isRunning.compareAndSet(false, true)) {
+      logger.warn("Run method is already in execution. Skipping this call.");
+      return;
+    }
+
     try {
       collectBars();
       logger.debug("Collected {} bars", bars.size());
@@ -94,6 +101,8 @@ public class SinglePositionRobot implements Robot {
       logger.info("Position state after run: {}", robotPositionState);
     } catch (Exception e) {
       logger.error("Failed to execute robot cycle", e);
+    } finally {
+      isRunning.set(false);
     }
   }
 
