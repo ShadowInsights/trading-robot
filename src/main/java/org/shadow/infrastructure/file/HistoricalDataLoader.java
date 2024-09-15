@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import org.shadow.infrastructure.file.model.Candlestick;
+import org.shadow.infrastructure.file.model.HistoricalDataBar;
 
 public class HistoricalDataLoader {
 
@@ -23,11 +23,11 @@ public class HistoricalDataLoader {
    * root of the project. If a full data path is provided, it loads from that path.
    *
    * @param fileName the name of the JSON file to load or the full path to the file
-   * @return a list of candlestick records
+   * @return a list of historical bars loaded from the file
    * @throws IOException if there is an error loading or parsing the file
    */
-  public List<Candlestick> load(String fileName) throws IOException {
-    Path filePath = Path.of(fileName);
+  public List<HistoricalDataBar> load(String fileName) throws IOException {
+    var filePath = Path.of(fileName);
     if (!filePath.isAbsolute()) {
       filePath = Path.of(DATA_DIR, fileName);
     }

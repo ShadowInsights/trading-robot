@@ -2,8 +2,9 @@ package org.shadow.application.robot;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.shadow.application.robot.common.model.Bar;
@@ -16,21 +17,22 @@ import org.shadow.domain.client.model.Order;
 
 public class SinglePositionRobot implements Robot {
 
-  private final List<Bar> bars = new LinkedList<>();
   private final Logger logger = LogManager.getLogger(SinglePositionRobot.class);
 
   private final RobotTimeframe robotTimeframe;
   private final BarsCollectorClient barsCollectorClient;
-  private final org.shadow.application.robot.strategy.Strategy<BinaryPositionMomentum>
-      binaryStrategy;
+  private final Strategy<BinaryPositionMomentum> binaryStrategy;
   private final ExchangeOrderClient exchangeOrderClient;
   private final String symbol;
-
-  private Position position;
-  private Order order;
   private RobotPositionState robotPositionState;
   private final BigDecimal percentageFromDeposit;
   private final Integer futuresMultiplier;
+  private final Instant initialBarsCollectionDate;
+  private final Integer requiredBarsCount;
+  private final Queue<Bar> bars;
+
+  private Position position;
+  private Order order;
 
   public SinglePositionRobot(
       RobotTimeframe robotTimeframe,
@@ -39,7 +41,9 @@ public class SinglePositionRobot implements Robot {
       Strategy<BinaryPositionMomentum> binaryStrategy,
       String symbol,
       BigDecimal percentageFromDeposit,
-      Integer futuresMultiplier) {
+      Integer futuresMultiplier,
+      Instant initialBarsCollectionDate,
+      Integer requiredBarsCount) {
     this.robotTimeframe = robotTimeframe;
     this.barsCollectorClient = barsCollectorClient;
     this.binaryStrategy = binaryStrategy;
@@ -47,15 +51,26 @@ public class SinglePositionRobot implements Robot {
     this.symbol = symbol;
     this.percentageFromDeposit = percentageFromDeposit;
     this.futuresMultiplier = futuresMultiplier;
+    this.initialBarsCollectionDate = initialBarsCollectionDate;
+    this.requiredBarsCount = requiredBarsCount;
+    this.bars = new CircularFifoQueue<>(requiredBarsCount);
   }
 
   @Override
   public synchronized void init() {
+    logger.info("Initializing robot...");
     // TODO: Load open position from exchangeOrderClient when position loading implemented
     position = null;
     robotPositionState = RobotPositionState.EXPLORING;
 
     collectBars();
+    if (bars.size() < requiredBarsCount) {
+      logger.warn(
+          "Not enough bars collected during initialization. Required: {}, actual: {}",
+          requiredBarsCount,
+          bars.size());
+    }
+
     logger.info("Robot initialized. Current state: {}", robotPositionState);
   }
 
@@ -63,7 +78,15 @@ public class SinglePositionRobot implements Robot {
   public synchronized void run() {
     try {
       collectBars();
-      logger.debug("Collected bars: {}", bars);
+      logger.debug("Collected {} bars", bars.size());
+
+      if (bars.size() < requiredBarsCount) {
+        logger.warn(
+            "Not enough bars to run strategy. Required: {}, actual: {}",
+            requiredBarsCount,
+            bars.size());
+        return;
+      }
 
       var handler = getPositionHandler();
       handler.handle(this);
@@ -110,7 +133,7 @@ public class SinglePositionRobot implements Robot {
   }
 
   public List<Bar> getBars() {
-    return bars;
+    return bars.stream().toList();
   }
 
   public Strategy<BinaryPositionMomentum> getStrategy() {
@@ -123,10 +146,12 @@ public class SinglePositionRobot implements Robot {
 
   public void setPosition(Position position) {
     this.position = position;
+    logger.info("Position set: {}", position);
   }
 
   public void setOrder(Order order) {
     this.order = order;
+    logger.info("Order set: {}", order);
   }
 
   public void setRobotPositionState(RobotPositionState state) {
@@ -138,9 +163,7 @@ public class SinglePositionRobot implements Robot {
   }
 
   private void collectBars() {
-    // TODO: Replace Instant.MIN with initial bars collection date, has to be configured from
-    //  constructor
-    var timeFrom = bars.isEmpty() ? Instant.MIN : bars.getLast().time();
+    var timeFrom = bars.peek() != null ? bars.peek().time() : initialBarsCollectionDate;
     var timeTo = Instant.now();
     var collectedBars =
         barsCollectorClient
@@ -151,7 +174,13 @@ public class SinglePositionRobot implements Robot {
                     new Bar(
                         bar.time(), bar.open(), bar.high(), bar.low(), bar.close(), bar.volume()))
             .toList();
+    // TODO: Implement filtering
+    //    var filteredCollectedBars = collectedBars.stream().filter(bar ->
+    // bar.time().isAfter(timeFrom)).toList();
+    //    bars.addAll(filteredCollectedBars);
+
     bars.addAll(collectedBars);
+
     logger.info("Bars collected from {} to {}: {}", timeFrom, timeTo, bars.size());
   }
 

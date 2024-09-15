@@ -5,6 +5,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.shadow.application.robot.common.model.Bar;
 import org.shadow.application.robot.indicator.ATRIndicator;
+import org.shadow.application.robot.indicator.Indicator;
 import org.shadow.application.robot.indicator.exception.InsufficientDataException;
 
 /**
@@ -78,5 +79,15 @@ public class ATRBlocker implements Blocker {
       logger.info("Normal volatility (ATR%: {}). Not blocking trading.", atrPercentage);
       return false;
     }
+  }
+
+  /**
+   * Returns the ATRIndicator used by this ATRBlocker.
+   *
+   * @return the ATRIndicator
+   */
+  @Override
+  public Indicator getIndicator() {
+    return atrIndicator;
   }
 }

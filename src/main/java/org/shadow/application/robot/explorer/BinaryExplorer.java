@@ -3,6 +3,7 @@ package org.shadow.application.robot.explorer;
 import java.util.List;
 import org.shadow.application.robot.common.model.Bar;
 import org.shadow.application.robot.explorer.model.BinaryIsMomentumExplorationState;
+import org.shadow.application.robot.indicator.Indicator;
 
 public interface BinaryExplorer {
 
@@ -11,4 +12,6 @@ public interface BinaryExplorer {
   BinaryIsMomentumExplorationState isMomentumToShort(List<Bar> bars);
 
   Integer getSeverity();
+
+  Indicator getIndicator();
 }

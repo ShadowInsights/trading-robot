@@ -1,7 +1,11 @@
 package org.shadow.config.factory;
 
+import static org.shadow.config.util.TimeUtil.calculateShiftBackToPreviousPeriod;
+
+import java.time.Instant;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.stream.Stream;
 import org.shadow.application.robot.RobotTimeframe;
 import org.shadow.application.robot.SinglePositionRobot;
 import org.shadow.application.robot.blocker.ATRBlocker;
@@ -67,6 +71,21 @@ public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRo
             stopLossRequiredPercentage,
             binaryIsMomentumExplorationStateIntegerMultiplierMap);
 
+    var maximumRequiredPeriodThreshold =
+        Stream.concat(
+                binaryExplorers.stream()
+                    .map(
+                        binaryExplorer ->
+                            binaryExplorer.getIndicator().getRequiredPeriodThreshold()),
+                blockers.stream()
+                    .map(blocker -> blocker.getIndicator().getRequiredPeriodThreshold()))
+            .max(Integer::compare)
+            .orElse(0);
+
+    var initialBarsCollectionDate =
+        calculateShiftBackToPreviousPeriod(
+            robotTimeframe.interval(), robotTimeframe.unit(), maximumRequiredPeriodThreshold);
+
     return new SinglePositionRobot(
         robotTimeframe,
         barsCollectorClient,
@@ -74,6 +93,8 @@ public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRo
         binaryStrategy,
         symbol,
         percentagePerDeposit,
-        futuresMultiplier);
+        futuresMultiplier,
+        Instant.ofEpochMilli(initialBarsCollectionDate),
+        maximumRequiredPeriodThreshold);
   }
 }

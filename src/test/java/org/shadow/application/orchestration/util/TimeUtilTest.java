@@ -11,12 +11,12 @@ class TimeUtilTest {
   @Test
   void testCalculateInitialDelayFor1Second() {
     try (var timeProviderMock = mockStatic(TimeProvider.class)) {
-      var mockNanoTime = 500_000_000L;
-      timeProviderMock.when(TimeProvider::currentTimeMillis).thenReturn(mockNanoTime);
+      var mockMillis = 5_500L;
+      timeProviderMock.when(TimeProvider::currentTimeMillis).thenReturn(mockMillis);
 
       var delay = TimeUtil.calculateInitialDelayUntilNextPeriod(1, TimeUnit.SECONDS);
 
-      var expectedDelay = 1000;
+      var expectedDelay = 500;
       assertEquals(expectedDelay, delay);
     }
   }
@@ -24,8 +24,8 @@ class TimeUtilTest {
   @Test
   void testCalculateInitialDelayFor5Seconds() {
     try (var timeProviderMock = mockStatic(TimeProvider.class)) {
-      var mockNanoTime = 4_000_000_000L;
-      timeProviderMock.when(TimeProvider::currentTimeMillis).thenReturn(mockNanoTime);
+      var mockMillis = 4_000_000_000L;
+      timeProviderMock.when(TimeProvider::currentTimeMillis).thenReturn(mockMillis);
 
       var delay = TimeUtil.calculateInitialDelayUntilNextPeriod(5, TimeUnit.SECONDS);
 
@@ -37,8 +37,8 @@ class TimeUtilTest {
   @Test
   void testCalculateInitialDelayFor1Minute() {
     try (var timeProviderMock = mockStatic(TimeProvider.class)) {
-      var mockNanoTime = 55_000_000_000L;
-      timeProviderMock.when(TimeProvider::currentTimeMillis).thenReturn(mockNanoTime);
+      var mockMillis = 55_000_000_000L;
+      timeProviderMock.when(TimeProvider::currentTimeMillis).thenReturn(mockMillis);
 
       var delay = TimeUtil.calculateInitialDelayUntilNextPeriod(1, TimeUnit.MINUTES);
 
@@ -50,8 +50,8 @@ class TimeUtilTest {
   @Test
   void testCalculateInitialDelayFor1Hour() {
     try (var timeProviderMock = mockStatic(TimeProvider.class)) {
-      var mockNanoTime = 3_600_000_000_000L;
-      timeProviderMock.when(TimeProvider::currentTimeMillis).thenReturn(mockNanoTime);
+      var mockMillis = 3_600_000_000_000L;
+      timeProviderMock.when(TimeProvider::currentTimeMillis).thenReturn(mockMillis);
 
       var delay = TimeUtil.calculateInitialDelayUntilNextPeriod(1, TimeUnit.HOURS);
 
@@ -63,8 +63,8 @@ class TimeUtilTest {
   @Test
   void testCalculateInitialDelayFor12Hours() {
     try (var timeProviderMock = mockStatic(TimeProvider.class)) {
-      var mockNanoTime = 43_200_000_000_000L;
-      timeProviderMock.when(TimeProvider::currentTimeMillis).thenReturn(mockNanoTime);
+      var mockMillis = 43_200_000_000_000L;
+      timeProviderMock.when(TimeProvider::currentTimeMillis).thenReturn(mockMillis);
 
       var delay = TimeUtil.calculateInitialDelayUntilNextPeriod(12, TimeUnit.HOURS);
 

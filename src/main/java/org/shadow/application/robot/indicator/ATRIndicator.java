@@ -10,7 +10,7 @@ import org.shadow.application.robot.indicator.exception.InsufficientDataExceptio
  * technical analysis indicator that measures market volatility by decomposing the entire range of
  * an asset price for that period.
  */
-public class ATRIndicator {
+public class ATRIndicator implements Indicator {
 
   private final int period;
 
@@ -103,7 +103,18 @@ public class ATRIndicator {
    *
    * @return the period
    */
+  @Override
   public int getPeriod() {
+    return period;
+  }
+
+  /**
+   * Returns the required period threshold for the ATR calculation.
+   *
+   * @return the required period threshold
+   */
+  @Override
+  public int getRequiredPeriodThreshold() {
     return period;
   }
 }
