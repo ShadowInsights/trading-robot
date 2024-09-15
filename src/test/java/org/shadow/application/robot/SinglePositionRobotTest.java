@@ -38,11 +38,12 @@ class SinglePositionRobotTest {
   private final String symbol = "BTCUSD";
   private final BigDecimal percentageFromDeposit = BigDecimal.valueOf(0.01);
   private final Integer futuresMultiplier = 5;
+  private final Instant initialBarsCollectionDate = Instant.now();
+  private final Integer requiredBarsCount = 1;
 
   @BeforeEach
   void setUp() {
     MockitoAnnotations.openMocks(this);
-
     robot =
         new SinglePositionRobot(
             robotTimeframe,
@@ -51,7 +52,9 @@ class SinglePositionRobotTest {
             binaryStrategy,
             symbol,
             percentageFromDeposit,
-            futuresMultiplier);
+            futuresMultiplier,
+            initialBarsCollectionDate,
+            requiredBarsCount);
 
     when(barsCollectorClient.collectBars(any(), anyLong(), any(Instant.class), any(Instant.class)))
         .thenReturn(
@@ -70,7 +73,7 @@ class SinglePositionRobotTest {
     robot.init();
     assertEquals(RobotPositionState.EXPLORING, getPrivateRobotPositionState(robot));
 
-    List<org.shadow.application.robot.common.model.Bar> bars = robot.getBars();
+    var bars = robot.getBars();
     assertNotNull(bars);
     assertEquals(1, bars.size());
 

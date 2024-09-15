@@ -3,7 +3,7 @@ package org.shadow.application.robot.indicator;
 import org.shadow.application.robot.indicator.exception.InsufficientDataException;
 
 /** RSIIndicator calculates the Relative Strength Index (RSI) for a set of prices. */
-public class RSIIndicator {
+public class RSIIndicator implements Indicator {
 
   private final int period;
 
@@ -69,7 +69,18 @@ public class RSIIndicator {
    *
    * @return The period.
    */
+  @Override
   public int getPeriod() {
     return period;
+  }
+
+  /**
+   * Returns the required period threshold for the RSI.
+   *
+   * @return The required period threshold.
+   */
+  @Override
+  public int getRequiredPeriodThreshold() {
+    return period + 1;
   }
 }
