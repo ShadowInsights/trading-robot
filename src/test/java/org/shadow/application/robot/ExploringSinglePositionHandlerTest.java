@@ -47,7 +47,15 @@ class ExploringSinglePositionHandlerTest {
     var momentum = new BinaryPositionMomentum(BinaryPositionMomentumActionType.LONG, stopLoss);
     when(strategy.calculatePositionMomentum(any())).thenReturn(momentum);
 
-    var order = new Order(1L, BigDecimal.valueOf(150.0), Instant.now(), OrderType.MARKET);
+    var order =
+        new Order(
+            1L,
+            BigDecimal.valueOf(150.0),
+            Instant.now(),
+            OrderType.MARKET,
+            new BigDecimal(100),
+            PositionType.LONG,
+            new BigDecimal(100));
     when(exchangeOrderClient.openLongOrder(any(), any(), any(), any(), any(), any()))
         .thenReturn(order);
 
@@ -77,7 +85,15 @@ class ExploringSinglePositionHandlerTest {
     var momentum = new BinaryPositionMomentum(BinaryPositionMomentumActionType.SHORT, stopLoss);
     when(strategy.calculatePositionMomentum(any())).thenReturn(momentum);
 
-    var order = new Order(2L, BigDecimal.valueOf(150.0), Instant.now(), OrderType.MARKET);
+    var order =
+        new Order(
+            2L,
+            BigDecimal.valueOf(150.0),
+            Instant.now(),
+            OrderType.MARKET,
+            new BigDecimal(100),
+            PositionType.LONG,
+            new BigDecimal(100));
     when(exchangeOrderClient.openShortOrder(any(), any(), any(), any(), any(), any()))
         .thenReturn(order);
 

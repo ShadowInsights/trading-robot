@@ -2,17 +2,18 @@ exchange {
   type = "FAKE"
   apiKey = "dev-api-key"
   apiSecret = "dev-api-secret"
+  virtualAccountInitialBalance = "100000.00"
 }
 
 robots = [
   {
     type = "SINGLE_POSITION"
     unit = "SECONDS"
-    interval = 15
+    interval = 1
     symbol = "BTC/USD"
-    allowedOrderPercentageFromDeposit = 0.1
+    allowedOrderPercentageFromDeposit = 1
     allowedOrderFuturesMultiplier = 1
     stopLossRequiredPercentage = 0.05
-    historicalDataFile = "BTCUSDT_1m_2024-03-01-00:00:00_2024-06-01-00:00:00.json"
+    historicalDataFile = "BTCUSDT_1m_2024-03-01-00_00_00_2024-06-01-00_00_00.json"
   }
 ]

@@ -1,22 +1,31 @@
 package org.shadow.infrastructure.client.fake;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.shadow.application.robot.common.model.PositionType;
 import org.shadow.domain.client.ExchangeOrderClient;
 import org.shadow.domain.client.model.Order;
-import org.shadow.domain.client.model.OrderType;
 
+/** A fake implementation of ExchangeOrderClient for testing purposes. */
 public class FakeExchangeOrderClient implements ExchangeOrderClient {
 
-  private final Logger logger = LogManager.getLogger(FakeExchangeOrderClient.class);
-  private static long orderIdCounter = 1;
+  private static final Logger logger = LogManager.getLogger(FakeExchangeOrderClient.class);
+  private final VirtualAccount virtualAccount;
+  private final FakeBarsCollectorClient fakeBarsCollectorClient;
+
+  /** Initializes the FakeExchangeOrderClient with a new VirtualAccount. */
+  public FakeExchangeOrderClient(
+      FakeBarsCollectorClient fakeBarsCollectorClient, VirtualAccount virtualAccount) {
+    this.fakeBarsCollectorClient = fakeBarsCollectorClient;
+    this.virtualAccount = virtualAccount;
+    logger.info("FakeExchangeOrderClient instantiated.");
+  }
 
   @Override
-  public synchronized void init() {
-    logger.info("Initializing FakeExchangeOrderClient...");
+  public void init() {
+    logger.info("FakeExchangeOrderClient initialized.");
   }
 
   @Override
@@ -27,7 +36,6 @@ public class FakeExchangeOrderClient implements ExchangeOrderClient {
       BigDecimal stopLoss,
       BigDecimal percentageFromDeposit,
       Integer futuresMultiplier) {
-
     logger.info(
         "Opening long order - Symbol: {}, Entry: {}, TakeProfits: {}, StopLoss: {}, PercentageFromDeposit: {}, FuturesMultiplier: {}",
         symbol,
@@ -37,8 +45,9 @@ public class FakeExchangeOrderClient implements ExchangeOrderClient {
         percentageFromDeposit,
         futuresMultiplier);
 
-    var order = new Order(generateOrderId(), entry, Instant.now(), OrderType.MARKET);
-
+    var order =
+        virtualAccount.openOrder(
+            PositionType.LONG, calculateEntryPrice(entry), percentageFromDeposit);
     logger.debug("Long order created: {}", order);
 
     return order;
@@ -52,7 +61,6 @@ public class FakeExchangeOrderClient implements ExchangeOrderClient {
       BigDecimal stopLoss,
       BigDecimal percentageFromDeposit,
       Integer futuresMultiplier) {
-
     logger.info(
         "Opening short order - Symbol: {}, Entry: {}, TakeProfits: {}, StopLoss: {}, PercentageFromDeposit: {}, FuturesMultiplier: {}",
         symbol,
@@ -62,8 +70,9 @@ public class FakeExchangeOrderClient implements ExchangeOrderClient {
         percentageFromDeposit,
         futuresMultiplier);
 
-    var order = new Order(generateOrderId(), entry, Instant.now(), OrderType.MARKET);
-
+    var order =
+        virtualAccount.openOrder(
+            PositionType.SHORT, calculateEntryPrice(entry), percentageFromDeposit);
     logger.debug("Short order created: {}", order);
 
     return order;
@@ -72,11 +81,44 @@ public class FakeExchangeOrderClient implements ExchangeOrderClient {
   @Override
   public void closeOrder(Order order) {
     logger.info("Closing order - ID: {}, Type: {}", order.id(), order.type());
-    // In a real implementation, logic to close the order would be here
-    logger.debug("Order closed: {}", order);
+    var exitPrice = fakeBarsCollectorClient.getCurrentPrice();
+    virtualAccount.closeOrder(order, exitPrice);
   }
 
-  private static long generateOrderId() {
-    return orderIdCounter++;
+  /**
+   * Retrieves the current virtual balance.
+   *
+   * @return Current balance as BigDecimal.
+   */
+  public BigDecimal getVirtualBalance() {
+    var balance = virtualAccount.getBalance();
+    logger.info("Current virtual balance: {}", balance);
+    return balance;
+  }
+
+  /**
+   * Retrieves a list of all open orders.
+   *
+   * @return List of open orders.
+   */
+  public List<Order> getOpenOrders() {
+    var openOrders = virtualAccount.getOpenOrders();
+    logger.info("Retrieved {} open orders.", openOrders.size());
+    return openOrders;
+  }
+
+  /**
+   * Retrieves a list of all closed orders.
+   *
+   * @return List of closed orders.
+   */
+  public List<Order> getClosedOrders() {
+    var closedOrders = virtualAccount.getClosedOrders();
+    logger.info("Retrieved {} closed orders.", closedOrders.size());
+    return closedOrders;
+  }
+
+  private BigDecimal calculateEntryPrice(BigDecimal entry) {
+    return entry == null ? fakeBarsCollectorClient.getCurrentPrice() : entry;
   }
 }

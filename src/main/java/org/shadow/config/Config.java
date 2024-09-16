@@ -21,7 +21,9 @@ public record Config(
         new ExchangeConfiguration(
             ExchangeConfigurationType.valueOf(config.getString("exchange.type")),
             config.getString("exchange.apiKey"),
-            config.getString("exchange.apiSecret"));
+            config.getString("exchange.apiSecret"),
+            Optional.of(
+                BigDecimal.valueOf(config.getDouble("exchange.virtualAccountInitialBalance"))));
 
     var robotConfigs =
         config.getConfigList("robots").stream()

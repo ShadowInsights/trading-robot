@@ -39,8 +39,25 @@ spotless {
     }
 }
 
+tasks.register('copyHistoricalDataToResources', Copy) {
+    from 'historical-data'
+    into 'src/main/resources/historical-data'
+
+    doFirst {
+        println 'Copying historical-data to resources for development mode...'
+    }
+}
+
 tasks.register('runInDevelopmentMode', JavaExec) {
     mainClass = 'org.shadow.Main'
     classpath = sourceSets.main.runtimeClasspath
     jvmArgs = ['-Dconfig.file=src/main/resources/application.conf.dev']
+
+    processResources.dependsOn copyHistoricalDataToResources
+    dependsOn 'copyHistoricalDataToResources'
+
+    doLast {
+        println 'Cleaning up historical-data from resources...'
+        delete fileTree('src/main/resources/historical-data')
+    }
 }

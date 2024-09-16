@@ -81,7 +81,7 @@ class HistoricalDataLoaderTest {
               dataLoader.load(nonExistentFile);
             });
 
-    assertTrue(exception.getMessage().contains("File not found"));
+    assertTrue(exception.getMessage().contains("Resource not found in classpath"));
   }
 
   @Test

@@ -21,6 +21,7 @@ public class FakeBarsCollectorClient implements BarsCollectorClient {
   private final String symbol;
 
   private List<Bar> bars;
+  private BigDecimal price;
 
   public FakeBarsCollectorClient(
       HistoricalDataLoader historicalDataLoader, String historicalDataFile, String symbol) {
@@ -52,6 +53,8 @@ public class FakeBarsCollectorClient implements BarsCollectorClient {
           "Loaded {} historicalDataBars from {} file",
           historicalDataBars.size(),
           historicalDataFile);
+      price = bars.getFirst().open();
+      logger.info("Price set to: {}", price);
     } catch (IOException ioException) {
       logger.error(ioException);
       throw new FailedToInitException();
@@ -60,7 +63,8 @@ public class FakeBarsCollectorClient implements BarsCollectorClient {
   }
 
   @Override
-  public List<Bar> collectBars(TimeUnit interval, long range, Instant timeFrom, Instant timeTo) {
+  public synchronized List<Bar> collectBars(
+      TimeUnit interval, long range, Instant timeFrom, Instant timeTo) {
     logger.info(
         "Collecting {} bars with parameters - Interval: {}, Range: {}, TimeFrom: {}, TimeTo: {}",
         symbol,
@@ -69,6 +73,13 @@ public class FakeBarsCollectorClient implements BarsCollectorClient {
         timeFrom,
         timeTo);
 
-    return List.of(bars.removeFirst());
+    var firstBar = bars.removeFirst();
+    price = firstBar.open();
+
+    return List.of(firstBar);
+  }
+
+  public BigDecimal getCurrentPrice() {
+    return price;
   }
 }
