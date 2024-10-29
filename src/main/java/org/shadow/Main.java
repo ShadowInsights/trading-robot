@@ -74,8 +74,8 @@ public class Main {
     var fakeBarsCollectorClientFactory = new FakeBarsCollectorClientFactory();
 
     return switch (exchangeConfiguration.type()) {
-      case FAKE ->
-          fakeBarsCollectorClientFactory.createClient(exchangeConfiguration, robotConfiguration);
+      case FAKE -> fakeBarsCollectorClientFactory.createClient(
+          exchangeConfiguration, robotConfiguration);
     };
   }
 
