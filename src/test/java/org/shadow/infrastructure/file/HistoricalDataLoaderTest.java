@@ -44,12 +44,12 @@ class HistoricalDataLoaderTest {
     Files.writeString(tempFile, jsonContent);
 
     try {
-      var candlesticks = dataLoader.load(tempFile.toAbsolutePath().toString());
+      var historicalDataBars = dataLoader.load(tempFile.toAbsolutePath().toString());
 
-      assertNotNull(candlesticks);
-      assertEquals(2, candlesticks.size());
+      assertNotNull(historicalDataBars);
+      assertEquals(2, historicalDataBars.size());
 
-      var first = candlesticks.getFirst();
+      var first = historicalDataBars.getFirst();
       assertEquals(1633036800L, first.timestamp());
       assertEquals("43000.00", first.open());
       assertEquals("43500.00", first.high());
@@ -57,7 +57,7 @@ class HistoricalDataLoaderTest {
       assertEquals("43200.00", first.close());
       assertEquals("1200.5", first.volume());
 
-      var second = candlesticks.get(1);
+      var second = historicalDataBars.get(1);
       assertEquals(1633040400L, second.timestamp());
       assertEquals("43200.00", second.open());
       assertEquals("43800.00", second.high());

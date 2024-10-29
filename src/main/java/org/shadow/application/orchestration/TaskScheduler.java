@@ -26,11 +26,16 @@ public class TaskScheduler {
     scheduledFuture =
         scheduler.scheduleAtFixedRate(
             () -> {
-              if (running.get()) {
-                logger.debug("Executing scheduled task.");
-                task.run();
-              } else {
-                logger.debug("Task execution is stopped; running flag is false.");
+              try {
+                if (running.get()) {
+                  logger.debug("Executing scheduled task.");
+                  task.run();
+                } else {
+                  logger.debug("Task execution is stopped; running flag is false.");
+                }
+              } catch (Exception e) {
+                logger.error("Error occurred while executing scheduled task.", e);
+                throw e;
               }
             },
             initialDelay,

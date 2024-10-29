@@ -14,7 +14,9 @@ public class FakeBarsCollectorClientFactory
       ExchangeConfiguration exchangeConfiguration, RobotConfiguration robotConfiguration) {
     if (robotConfiguration.historicalDataFile().isPresent()) {
       return new FakeBarsCollectorClient(
-          new HistoricalDataLoader(), robotConfiguration.historicalDataFile().get());
+          new HistoricalDataLoader(),
+          robotConfiguration.historicalDataFile().get(),
+          robotConfiguration.symbol());
     } else {
       throw new FailedToConstructException(FakeBarsCollectorClient.class);
     }
