@@ -25,25 +25,25 @@ class MACDIndicatorTest {
 
   @Test
   void testCalculateWithSufficientData() {
-    double[] prices = {
+    var prices = new double[]{
       100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0,
       113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0,
       126.0, 127.0, 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0
     };
 
-    Double result = macdIndicator.calculate(prices);
+    var result = macdIndicator.calculate(prices);
     assertNotNull(result);
   }
 
   @Test
   void testCalculateWithInsufficientData() {
-    double[] prices = {100.0, 101.0, 102.0, 103.0, 104.0, 105.0};
+    var prices = new double[]{100.0, 101.0, 102.0, 103.0, 104.0, 105.0};
     assertThrows(InsufficientDataException.class, () -> macdIndicator.calculate(prices));
   }
 
   @Test
   void testCalculateWithExactlyLongPeriodData() {
-    double[] prices = {
+    var prices = new double[]{
       100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0, 110.0, 111.0, 112.0,
       113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0, 120.0, 121.0, 122.0, 123.0, 124.0, 125.0
     };
@@ -53,7 +53,7 @@ class MACDIndicatorTest {
 
   @Test
   void testCalculateExactMACDValue() {
-    double[] prices = {
+    var prices = new double[]{
       100.0, 101.0, 102.0, 103.0, 104.0, 105.0, 106.0, 107.0, 108.0, 109.0,
       110.0, 111.0, 112.0, 113.0, 114.0, 115.0, 116.0, 117.0, 118.0, 119.0,
       120.0, 121.0, 122.0, 123.0, 124.0, 125.0, 126.0, 127.0, 128.0, 129.0,
@@ -61,10 +61,10 @@ class MACDIndicatorTest {
       140.0
     };
 
-    double expectedMACD = 1.6858140220764604;
+    var expectedMACD = 1.6858140220764604;
 
-    Double result = macdIndicator.calculate(prices);
+    var result = macdIndicator.calculate(prices);
 
-    assertEquals(expectedMACD, result);
+    assertEquals(expectedMACD, result.getHistogram());
   }
 }

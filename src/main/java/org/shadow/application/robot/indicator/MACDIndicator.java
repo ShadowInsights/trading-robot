@@ -1,6 +1,7 @@
 package org.shadow.application.robot.indicator;
 
 import org.shadow.application.robot.indicator.exception.InsufficientDataException;
+import org.shadow.application.robot.indicator.model.MACDCalculationResult;
 
 /**
  * The MACDIndicator class calculates the Moving Average Convergence Divergence (MACD) for a given
@@ -34,27 +35,25 @@ public class MACDIndicator {
   }
 
   /**
-   * Calculates the MACD value based on the provided prices. The MACD is the difference between the
-   * short-term EMA and the long-term EMA. The signal line is an EMA of the MACD, and the method
-   * returns the difference between the MACD and the signal line.
+   * Calculates the MACD for the given set of prices.
    *
-   * @param prices An array of prices used to calculate the MACD.
-   * @return The MACD minus the signal line value.
+   * @param prices An array of prices.
+   * @return The MACD value.
    * @throws InsufficientDataException if there is not enough data to calculate the MACD.
    */
-  public Double calculate(double[] prices) {
+  public MACDCalculationResult calculate(double[] prices) {
     if (prices.length < longPeriod + signalPeriod) {
       throw new InsufficientDataException("Not enough data to calculate MACD.");
     }
 
-    double shortEMA = calculateSMA(prices, shortPeriod);
-    double longEMA = calculateSMA(prices, longPeriod);
+    var shortEMA = calculateSMA(prices, shortPeriod);
+    var longEMA = calculateSMA(prices, longPeriod);
 
-    double macd = 0;
-    double signalEMA = 0;
+    var macd = 0.0;
+    var signalEMA = 0.0;
 
     for (int i = longPeriod; i < prices.length; i++) {
-      double price = prices[i];
+      var price = prices[i];
 
       shortEMA = calculateEMA(price, shortEMA, shortPeriod);
       longEMA = calculateEMA(price, longEMA, longPeriod);
@@ -66,7 +65,7 @@ public class MACDIndicator {
       }
     }
 
-    return macd - signalEMA;
+    return new MACDCalculationResult(macd, signalEMA);
   }
 
   /**
@@ -79,7 +78,7 @@ public class MACDIndicator {
    * @return The new EMA value.
    */
   private double calculateEMA(double price, double prevEMA, int period) {
-    double alpha = 2.0 / (period + 1);
+    var alpha = 2.0 / (period + 1);
     return price * alpha + prevEMA * (1 - alpha);
   }
 
@@ -92,7 +91,7 @@ public class MACDIndicator {
    * @return The SMA value.
    */
   private double calculateSMA(double[] prices, int period) {
-    double sum = 0;
+    var sum = 0.0;
     for (int i = 0; i < period; i++) {
       sum += prices[i];
     }
