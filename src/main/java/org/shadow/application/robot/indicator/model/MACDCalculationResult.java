@@ -1,8 +1,6 @@
 package org.shadow.application.robot.indicator.model;
 
-/**
- * Holds the MACD line and signal line values.
- */
+/** Holds the MACD line and signal line values. */
 public record MACDCalculationResult(double macdLine, double signalLine) {
 
   /**

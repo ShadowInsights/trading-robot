@@ -10,7 +10,7 @@ import org.shadow.application.robot.indicator.model.MACDCalculationResult;
  * Exponential Moving Average (EMA) and a long-term EMA. A signal line, which is an EMA of the MACD,
  * is also calculated to generate buy/sell signals.
  */
-public class MACDIndicator {
+public class MACDIndicator implements Indicator {
 
   private final int shortPeriod;
   private final int longPeriod;
@@ -68,6 +68,7 @@ public class MACDIndicator {
     return new MACDCalculationResult(macd, signalEMA);
   }
 
+  // TODO: Move to external class - TR-28
   /**
    * Calculates the Exponential Moving Average (EMA) for a given price based on the previous EMA and
    * the period.
@@ -82,6 +83,7 @@ public class MACDIndicator {
     return price * alpha + prevEMA * (1 - alpha);
   }
 
+  // TODO: Move to external class - TR-28
   /**
    * Calculates the Simple Moving Average (SMA) for the first `period` elements in the prices array.
    * The SMA is used as the initial value for the EMA calculation.
@@ -96,5 +98,15 @@ public class MACDIndicator {
       sum += prices[i];
     }
     return sum / period;
+  }
+
+  @Override
+  public int getPeriod() {
+    return longPeriod;
+  }
+
+  @Override
+  public int getRequiredPeriodThreshold() {
+    return longPeriod;
   }
 }
