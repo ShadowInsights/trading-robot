@@ -10,6 +10,7 @@ import org.shadow.application.robot.RobotTimeframe;
 import org.shadow.application.robot.SinglePositionRobot;
 import org.shadow.application.robot.blocker.ATRBlocker;
 import org.shadow.application.robot.blocker.Blocker;
+import org.shadow.application.robot.explorer.BollingerBandsBinaryExplorer;
 import org.shadow.application.robot.explorer.MACDBinaryExplorer;
 import org.shadow.application.robot.explorer.RSIBinaryExplorer;
 import org.shadow.application.robot.explorer.model.BinaryIsMomentumExplorationState;
@@ -35,6 +36,11 @@ public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRo
   public static final int MACD_SHORT_PERIOD = 12;
   public static final int MACD_LONG_PERIOD = 26;
   public static final int MACD_SIGNAL_PERIOD = 9;
+
+  // Constants for Bollinger Bands Explorer
+  public static final int BOLLINGER_EXPLORER_SEVERITY = 1;
+  public static final int BOLLINGER_PERIOD = 20;
+  public static final double BOLLINGER_STD_DEV_MULTIPLIER = 2.0;
 
   // Valid only for 1-minute timeframe
   private static final int ATR_BLOCKER_PERIOD = 7;
@@ -71,7 +77,9 @@ public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRo
         List.of(
             new RSIBinaryExplorer(RSI_EXPLORER_SEVERITY, RSI_EXPLORER_PERIOD),
             new MACDBinaryExplorer(
-                MACD_EXPLORER_SEVERITY, MACD_SHORT_PERIOD, MACD_LONG_PERIOD, MACD_SIGNAL_PERIOD));
+                MACD_EXPLORER_SEVERITY, MACD_SHORT_PERIOD, MACD_LONG_PERIOD, MACD_SIGNAL_PERIOD),
+            new BollingerBandsBinaryExplorer(
+                BOLLINGER_EXPLORER_SEVERITY, BOLLINGER_PERIOD, BOLLINGER_STD_DEV_MULTIPLIER));
 
     var blockers = List.<Blocker>of(new ATRBlocker(ATR_BLOCKER_PERIOD));
     var binaryStrategy =
