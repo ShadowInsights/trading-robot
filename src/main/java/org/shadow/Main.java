@@ -81,9 +81,8 @@ public class Main {
 
     var client =
         switch (exchangeConfiguration.type()) {
-          case FAKE ->
-              fakeExchangeOrderClientFactory.createClient(
-                  barsCollectorClient, exchangeConfiguration);
+          case FAKE -> fakeExchangeOrderClientFactory.createClient(
+              barsCollectorClient, exchangeConfiguration);
         };
 
     client.init();
