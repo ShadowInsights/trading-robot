@@ -10,7 +10,7 @@ import org.shadow.application.robot.RobotTimeframe;
 import org.shadow.application.robot.SinglePositionRobot;
 import org.shadow.application.robot.blocker.ATRBlocker;
 import org.shadow.application.robot.blocker.Blocker;
-import org.shadow.application.robot.explorer.BinaryExplorer;
+import org.shadow.application.robot.explorer.MACDBinaryExplorer;
 import org.shadow.application.robot.explorer.RSIBinaryExplorer;
 import org.shadow.application.robot.explorer.model.BinaryIsMomentumExplorationState;
 import org.shadow.application.robot.strategy.BinaryStrategy;
@@ -26,9 +26,15 @@ public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRo
   public static final int MEDIUM_MULTIPLIER = 2;
   public static final int MAJOR_MULTIPLIER = 3;
 
+  // Constants for RSI Explorer
   public static final int RSI_EXPLORER_SEVERITY = 1;
-  // Valid only for 1-minute timeframe
   public static final int RSI_EXPLORER_PERIOD = 7;
+
+  // Constants for MACD Explorer
+  public static final int MACD_EXPLORER_SEVERITY = 1;
+  public static final int MACD_SHORT_PERIOD = 12;
+  public static final int MACD_LONG_PERIOD = 26;
+  public static final int MACD_SIGNAL_PERIOD = 9;
 
   // Valid only for 1-minute timeframe
   private static final int ATR_BLOCKER_PERIOD = 7;
@@ -62,7 +68,11 @@ public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRo
         BinaryIsMomentumExplorationState.MAJOR, MAJOR_MULTIPLIER);
 
     var binaryExplorers =
-        List.<BinaryExplorer>of(new RSIBinaryExplorer(RSI_EXPLORER_SEVERITY, RSI_EXPLORER_PERIOD));
+        List.of(
+            new RSIBinaryExplorer(RSI_EXPLORER_SEVERITY, RSI_EXPLORER_PERIOD),
+            new MACDBinaryExplorer(
+                MACD_EXPLORER_SEVERITY, MACD_SHORT_PERIOD, MACD_LONG_PERIOD, MACD_SIGNAL_PERIOD));
+
     var blockers = List.<Blocker>of(new ATRBlocker(ATR_BLOCKER_PERIOD));
     var binaryStrategy =
         new BinaryStrategy(

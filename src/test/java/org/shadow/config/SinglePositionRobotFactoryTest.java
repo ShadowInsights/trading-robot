@@ -53,7 +53,7 @@ class SinglePositionRobotFactoryTest {
     assertNotNull(strategy, "The binary strategy should not be null");
 
     var explorers = strategy.getBinaryExplorers();
-    assertEquals(1, explorers.size(), "There should be one explorer");
+    assertEquals(2, explorers.size(), "There should be one explorer");
     assertEquals(
         RSIBinaryExplorer.class,
         explorers.getFirst().getClass(),
