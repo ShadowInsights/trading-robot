@@ -102,11 +102,11 @@ public class MACDIndicator implements Indicator {
 
   @Override
   public int getPeriod() {
-    return longPeriod;
+    return longPeriod + signalPeriod;
   }
 
   @Override
   public int getRequiredPeriodThreshold() {
-    return longPeriod;
+    return longPeriod + signalPeriod + 1;
   }
 }
