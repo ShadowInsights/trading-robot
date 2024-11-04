@@ -17,47 +17,63 @@ public class StochasticOscillatorExplorer implements BinaryExplorer {
 
   private final Logger logger = LogManager.getLogger(StochasticOscillatorExplorer.class);
 
-  // TODO: Make constants below configurable
-  // Valid only for 1-minute timeframe
-  private static final double STOCH_OVERSOLD_THRESHOLD = 20.0;
-  // Valid only for 1-minute timeframe
-  private static final double STOCH_OVERBOUGHT_THRESHOLD = 80.0;
-  // Valid only for 1-minute timeframe
-  private static final double STOCH_LONG_MEDIUM_THRESHOLD = 30.0;
-  // Valid only for 1-minute timeframe
-  private static final double STOCH_SHORT_MEDIUM_THRESHOLD = 70.0;
-  // Valid only for 1-minute timeframe
-  private static final double STOCH_LONG_MINOR_THRESHOLD = 40.0;
-  // Valid only for 1-minute timeframe
-  private static final double STOCH_SHORT_MINOR_THRESHOLD = 60.0;
-
   private final Integer severity;
   private final StochasticOscillatorIndicator stochasticIndicator;
 
+  private final double oversoldThreshold;
+  private final double overboughtThreshold;
+  private final double longMediumThreshold;
+  private final double shortMediumThreshold;
+  private final double longMinorThreshold;
+  private final double shortMinorThreshold;
+
   /**
-   * Constructs a StochasticOscillatorExplorer with specified severity, period, and dPeriod.
+   * Constructs a StochasticOscillatorExplorer with specified parameters.
    *
    * @param severity the severity level of momentum exploration
    * @param period the look-back period for %K calculation
    * @param dPeriod the period over which to average %K to get %D
+   * @param oversoldThreshold threshold indicating oversold condition
+   * @param overboughtThreshold threshold indicating overbought condition
+   * @param longMediumThreshold threshold for medium long signals
+   * @param shortMediumThreshold threshold for medium short signals
+   * @param longMinorThreshold threshold for minor long signals
+   * @param shortMinorThreshold threshold for minor short signals
    */
-  public StochasticOscillatorExplorer(Integer severity, int period, int dPeriod) {
+  public StochasticOscillatorExplorer(
+      Integer severity,
+      int period,
+      int dPeriod,
+      double oversoldThreshold,
+      double overboughtThreshold,
+      double longMediumThreshold,
+      double shortMediumThreshold,
+      double longMinorThreshold,
+      double shortMinorThreshold) {
+
     this.severity = severity;
     this.stochasticIndicator = new StochasticOscillatorIndicator(period, dPeriod);
+
+    this.oversoldThreshold = oversoldThreshold;
+    this.overboughtThreshold = overboughtThreshold;
+    this.longMediumThreshold = longMediumThreshold;
+    this.shortMediumThreshold = shortMediumThreshold;
+    this.longMinorThreshold = longMinorThreshold;
+    this.shortMinorThreshold = shortMinorThreshold;
+
     logger.info(
-        "StochasticOscillatorExplorer initialized with severity {}, period {}, dPeriod {}",
+        "StochasticOscillatorExplorer initialized with severity {}, period {}, dPeriod {}, thresholds: oversold={}, overbought={}, longMedium={}, shortMedium={}, longMinor={}, shortMinor={}",
         severity,
         period,
-        dPeriod);
+        dPeriod,
+        oversoldThreshold,
+        overboughtThreshold,
+        longMediumThreshold,
+        shortMediumThreshold,
+        longMinorThreshold,
+        shortMinorThreshold);
   }
 
-  /**
-   * Evaluates whether the momentum indicates a long (buy) opportunity based on Stochastic
-   * Oscillator.
-   *
-   * @param bars the list of {@link Bar} objects representing market data
-   * @return the momentum state as a {@link BinaryIsMomentumExplorationState} value
-   */
   @Override
   public BinaryIsMomentumExplorationState isMomentumToLong(List<Bar> bars) {
     if (bars == null || bars.size() < stochasticIndicator.getRequiredPeriodThreshold()) {
@@ -77,13 +93,6 @@ public class StochasticOscillatorExplorer implements BinaryExplorer {
     return longState;
   }
 
-  /**
-   * Evaluates whether the momentum indicates a short (sell) opportunity based on Stochastic
-   * Oscillator.
-   *
-   * @param bars the list of {@link Bar} objects representing market data
-   * @return the momentum state as a {@link BinaryIsMomentumExplorationState} value
-   */
   @Override
   public BinaryIsMomentumExplorationState isMomentumToShort(List<Bar> bars) {
     if (bars == null || bars.size() < stochasticIndicator.getRequiredPeriodThreshold()) {
@@ -103,43 +112,33 @@ public class StochasticOscillatorExplorer implements BinaryExplorer {
     return shortState;
   }
 
-  /**
-   * Returns the severity level of the momentum exploration.
-   *
-   * @return the severity level
-   */
   @Override
   public Integer getSeverity() {
     return severity;
   }
 
-  /**
-   * Returns the StochasticOscillatorIndicator used by this explorer.
-   *
-   * @return the StochasticOscillatorIndicator
-   */
   @Override
   public Indicator getIndicator() {
     return stochasticIndicator;
   }
 
   private BinaryIsMomentumExplorationState evaluateLongState(double percentK, double percentD) {
-    if (percentK < STOCH_OVERSOLD_THRESHOLD && percentK > percentD) {
+    if (percentK < oversoldThreshold && percentK > percentD) {
       return BinaryIsMomentumExplorationState.MAJOR;
-    } else if (percentK < STOCH_LONG_MEDIUM_THRESHOLD && percentK > percentD) {
+    } else if (percentK < longMediumThreshold && percentK > percentD) {
       return BinaryIsMomentumExplorationState.MEDIUM;
-    } else if (percentK < STOCH_LONG_MINOR_THRESHOLD && percentK > percentD) {
+    } else if (percentK < longMinorThreshold && percentK > percentD) {
       return BinaryIsMomentumExplorationState.MINOR;
     }
     return BinaryIsMomentumExplorationState.NOT_READY;
   }
 
   private BinaryIsMomentumExplorationState evaluateShortState(double percentK, double percentD) {
-    if (percentK > STOCH_OVERBOUGHT_THRESHOLD && percentK < percentD) {
+    if (percentK > overboughtThreshold && percentK < percentD) {
       return BinaryIsMomentumExplorationState.MAJOR;
-    } else if (percentK > STOCH_SHORT_MEDIUM_THRESHOLD && percentK < percentD) {
+    } else if (percentK > shortMediumThreshold && percentK < percentD) {
       return BinaryIsMomentumExplorationState.MEDIUM;
-    } else if (percentK > STOCH_SHORT_MINOR_THRESHOLD && percentK < percentD) {
+    } else if (percentK > shortMinorThreshold && percentK < percentD) {
       return BinaryIsMomentumExplorationState.MINOR;
     }
     return BinaryIsMomentumExplorationState.NOT_READY;

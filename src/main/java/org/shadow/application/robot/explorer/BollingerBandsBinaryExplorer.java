@@ -19,48 +19,63 @@ public class BollingerBandsBinaryExplorer implements BinaryExplorer {
 
   private final Logger logger = LogManager.getLogger(BollingerBandsBinaryExplorer.class);
 
-  // TODO: Make constants below configurable
-  // Valid only for 1-minute timeframe
-  private static final double BB_LOWER_BAND_THRESHOLD = 0.0;
-  // Valid only for 1-minute timeframe
-  private static final double BB_UPPER_BAND_THRESHOLD = 1.0;
-  // Valid only for 1-minute timeframe
-  private static final double BB_LONG_MEDIUM_THRESHOLD = 0.2;
-  // Valid only for 1-minute timeframe
-  private static final double BB_SHORT_MEDIUM_THRESHOLD = 0.8;
-  // Valid only for 1-minute timeframe
-  private static final double BB_LONG_MINOR_THRESHOLD = 0.4;
-  // Valid only for 1-minute timeframe
-  private static final double BB_SHORT_MINOR_THRESHOLD = 0.6;
-
   private final Integer severity;
   private final BollingerBandsIndicator bollingerBandsIndicator;
 
+  private final double lowerBandThreshold;
+  private final double upperBandThreshold;
+  private final double longMediumThreshold;
+  private final double shortMediumThreshold;
+  private final double longMinorThreshold;
+  private final double shortMinorThreshold;
+
   /**
-   * Constructs a BollingerBandsBinaryExplorer with specified severity, period, and standard
-   * deviation multiplier.
+   * Constructs a BollingerBandsBinaryExplorer with specified parameters.
    *
    * @param severity the severity level of momentum exploration (affects the thresholds)
    * @param period the period for the Bollinger Bands calculation
    * @param standardDeviationMultiplier the multiplier for standard deviation (usually 2)
+   * @param lowerBandThreshold threshold for the lower band (e.g., 0.0)
+   * @param upperBandThreshold threshold for the upper band (e.g., 1.0)
+   * @param longMediumThreshold threshold for medium long signals
+   * @param shortMediumThreshold threshold for medium short signals
+   * @param longMinorThreshold threshold for minor long signals
+   * @param shortMinorThreshold threshold for minor short signals
    */
   public BollingerBandsBinaryExplorer(
-      Integer severity, int period, double standardDeviationMultiplier) {
+      Integer severity,
+      int period,
+      double standardDeviationMultiplier,
+      double lowerBandThreshold,
+      double upperBandThreshold,
+      double longMediumThreshold,
+      double shortMediumThreshold,
+      double longMinorThreshold,
+      double shortMinorThreshold) {
+
     this.severity = severity;
     this.bollingerBandsIndicator = new BollingerBandsIndicator(period, standardDeviationMultiplier);
+
+    this.lowerBandThreshold = lowerBandThreshold;
+    this.upperBandThreshold = upperBandThreshold;
+    this.longMediumThreshold = longMediumThreshold;
+    this.shortMediumThreshold = shortMediumThreshold;
+    this.longMinorThreshold = longMinorThreshold;
+    this.shortMinorThreshold = shortMinorThreshold;
+
     logger.info(
-        "BollingerBandsBinaryExplorer initialized with severity {}, period {}, standardDeviationMultiplier {}",
+        "BollingerBandsBinaryExplorer initialized with severity {}, period {}, standardDeviationMultiplier {}, thresholds: lowerBand={}, upperBand={}, longMedium={}, shortMedium={}, longMinor={}, shortMinor={}",
         severity,
         period,
-        standardDeviationMultiplier);
+        standardDeviationMultiplier,
+        lowerBandThreshold,
+        upperBandThreshold,
+        longMediumThreshold,
+        shortMediumThreshold,
+        longMinorThreshold,
+        shortMinorThreshold);
   }
 
-  /**
-   * Evaluates whether the momentum indicates a long (buy) opportunity based on Bollinger Bands.
-   *
-   * @param bars the list of {@link Bar} objects representing market data
-   * @return the momentum state as a {@link BinaryIsMomentumExplorationState} value
-   */
   @Override
   public BinaryIsMomentumExplorationState isMomentumToLong(List<Bar> bars) {
     if (bars == null || bars.size() < bollingerBandsIndicator.getRequiredPeriodThreshold()) {
@@ -81,12 +96,6 @@ public class BollingerBandsBinaryExplorer implements BinaryExplorer {
     return longState;
   }
 
-  /**
-   * Evaluates whether the momentum indicates a short (sell) opportunity based on Bollinger Bands.
-   *
-   * @param bars the list of {@link Bar} objects representing market data
-   * @return the momentum state as a {@link BinaryIsMomentumExplorationState} value
-   */
   @Override
   public BinaryIsMomentumExplorationState isMomentumToShort(List<Bar> bars) {
     if (bars == null || bars.size() < bollingerBandsIndicator.getRequiredPeriodThreshold()) {
@@ -107,61 +116,43 @@ public class BollingerBandsBinaryExplorer implements BinaryExplorer {
     return shortState;
   }
 
-  /**
-   * Returns the severity level of the momentum exploration.
-   *
-   * @return the severity level
-   */
   @Override
   public Integer getSeverity() {
     return severity;
   }
 
-  /**
-   * Returns the BollingerBandsIndicator used by this explorer.
-   *
-   * @return the BollingerBandsIndicator
-   */
   @Override
   public Indicator getIndicator() {
     return bollingerBandsIndicator;
   }
 
   private double[] extractClosingPrices(List<Bar> bars) {
-    return bars.stream()
-        .map(Bar::close)
-        .map(BigDecimal::doubleValue)
-        .mapToDouble(Double::doubleValue)
-        .toArray();
+    return bars.stream().map(Bar::close).mapToDouble(BigDecimal::doubleValue).toArray();
   }
 
-  /**
-   * Calculates the position of the current price within the Bollinger Bands. Returns a value
-   * between 0 and 1, where 0 is at the lower band and 1 is at the upper band.
-   */
   private double calculatePositionInBands(double price, BollingerBandsResult bands) {
-    double lowerBand = bands.lowerBand();
-    double upperBand = bands.upperBand();
+    var lowerBand = bands.lowerBand();
+    var upperBand = bands.upperBand();
     return (price - lowerBand) / (upperBand - lowerBand);
   }
 
   private BinaryIsMomentumExplorationState evaluateLongState(double position) {
-    if (position <= BB_LOWER_BAND_THRESHOLD) {
+    if (position <= lowerBandThreshold) {
       return BinaryIsMomentumExplorationState.MAJOR;
-    } else if (position <= BB_LONG_MEDIUM_THRESHOLD) {
+    } else if (position <= longMediumThreshold) {
       return BinaryIsMomentumExplorationState.MEDIUM;
-    } else if (position <= BB_LONG_MINOR_THRESHOLD) {
+    } else if (position <= longMinorThreshold) {
       return BinaryIsMomentumExplorationState.MINOR;
     }
     return BinaryIsMomentumExplorationState.NOT_READY;
   }
 
   private BinaryIsMomentumExplorationState evaluateShortState(double position) {
-    if (position >= BB_UPPER_BAND_THRESHOLD) {
+    if (position >= upperBandThreshold) {
       return BinaryIsMomentumExplorationState.MAJOR;
-    } else if (position >= BB_SHORT_MEDIUM_THRESHOLD) {
+    } else if (position >= shortMediumThreshold) {
       return BinaryIsMomentumExplorationState.MEDIUM;
-    } else if (position >= BB_SHORT_MINOR_THRESHOLD) {
+    } else if (position >= shortMinorThreshold) {
       return BinaryIsMomentumExplorationState.MINOR;
     }
     return BinaryIsMomentumExplorationState.NOT_READY;

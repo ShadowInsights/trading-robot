@@ -2,6 +2,7 @@ package org.shadow.config.factory;
 
 import static org.shadow.config.util.TimeUtil.calculateShiftBackToPreviousPeriod;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.EnumMap;
 import java.util.List;
@@ -21,35 +22,6 @@ import org.shadow.domain.client.BarsCollectorClient;
 import org.shadow.domain.client.ExchangeOrderClient;
 
 public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRobot> {
-
-  // TODO: Make constants below configurable
-  public static final int NOT_READY_MULTIPLIER = 0;
-  public static final int MINOR_MULTIPLIER = 1;
-  public static final int MEDIUM_MULTIPLIER = 2;
-  public static final int MAJOR_MULTIPLIER = 3;
-
-  // Constants for RSI Explorer
-  public static final int RSI_EXPLORER_SEVERITY = 1;
-  public static final int RSI_EXPLORER_PERIOD = 7;
-
-  // Constants for MACD Explorer
-  public static final int MACD_EXPLORER_SEVERITY = 1;
-  public static final int MACD_SHORT_PERIOD = 12;
-  public static final int MACD_LONG_PERIOD = 26;
-  public static final int MACD_SIGNAL_PERIOD = 9;
-
-  // Constants for Bollinger Bands Explorer
-  public static final int BOLLINGER_EXPLORER_SEVERITY = 1;
-  public static final int BOLLINGER_PERIOD = 20;
-  public static final double BOLLINGER_STD_DEV_MULTIPLIER = 2.0;
-
-  // Constants for Stochastic Oscillator Explorer
-  public static final int STOCHASTIC_EXPLORER_SEVERITY = 1;
-  public static final int STOCHASTIC_PERIOD = 14;
-  public static final int STOCHASTIC_D_PERIOD = 3;
-
-  // Valid only for 1-minute timeframe
-  private static final int ATR_BLOCKER_PERIOD = 7;
 
   @Override
   public SinglePositionRobot createRobot(
@@ -71,26 +43,68 @@ public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRo
         new EnumMap<BinaryIsMomentumExplorationState, Integer>(
             BinaryIsMomentumExplorationState.class);
 
-    stateMultiplierMap.put(BinaryIsMomentumExplorationState.NOT_READY, NOT_READY_MULTIPLIER);
-    stateMultiplierMap.put(BinaryIsMomentumExplorationState.MINOR, MINOR_MULTIPLIER);
-    stateMultiplierMap.put(BinaryIsMomentumExplorationState.MEDIUM, MEDIUM_MULTIPLIER);
-    stateMultiplierMap.put(BinaryIsMomentumExplorationState.MAJOR, MAJOR_MULTIPLIER);
+    stateMultiplierMap.put(
+        BinaryIsMomentumExplorationState.NOT_READY, robotConfiguration.notReadyMultiplier());
+    stateMultiplierMap.put(
+        BinaryIsMomentumExplorationState.MINOR, robotConfiguration.minorMultiplier());
+    stateMultiplierMap.put(
+        BinaryIsMomentumExplorationState.MEDIUM, robotConfiguration.mediumMultiplier());
+    stateMultiplierMap.put(
+        BinaryIsMomentumExplorationState.MAJOR, robotConfiguration.majorMultiplier());
+
+    var rsiConfig = robotConfiguration.rsiExplorerConfig();
+    var macdConfig = robotConfiguration.macdExplorerConfig();
+    var bollingerConfig = robotConfiguration.bollingerBandsExplorerConfig();
+    var stochasticConfig = robotConfiguration.stochasticOscillatorExplorerConfig();
 
     var binaryExplorers =
         List.of(
-            new RSIBinaryExplorer(RSI_EXPLORER_SEVERITY, RSI_EXPLORER_PERIOD),
+            new RSIBinaryExplorer(
+                rsiConfig.severity(),
+                rsiConfig.period(),
+                rsiConfig.oversoldThreshold(),
+                rsiConfig.overboughtThreshold(),
+                rsiConfig.longMediumThreshold(),
+                rsiConfig.shortMediumThreshold(),
+                rsiConfig.longMinorThreshold(),
+                rsiConfig.shortMinorThreshold()),
             new MACDBinaryExplorer(
-                MACD_EXPLORER_SEVERITY, MACD_SHORT_PERIOD, MACD_LONG_PERIOD, MACD_SIGNAL_PERIOD),
+                macdConfig.severity(),
+                macdConfig.shortPeriod(),
+                macdConfig.longPeriod(),
+                macdConfig.signalPeriod(),
+                macdConfig.histogramMajorThreshold(),
+                macdConfig.histogramMediumThreshold(),
+                macdConfig.histogramMinorThreshold()),
             new BollingerBandsBinaryExplorer(
-                BOLLINGER_EXPLORER_SEVERITY, BOLLINGER_PERIOD, BOLLINGER_STD_DEV_MULTIPLIER),
+                bollingerConfig.severity(),
+                bollingerConfig.period(),
+                bollingerConfig.standardDeviationMultiplier(),
+                bollingerConfig.lowerBandThreshold(),
+                bollingerConfig.upperBandThreshold(),
+                bollingerConfig.longMediumThreshold(),
+                bollingerConfig.shortMediumThreshold(),
+                bollingerConfig.longMinorThreshold(),
+                bollingerConfig.shortMinorThreshold()),
             new StochasticOscillatorExplorer(
-                STOCHASTIC_EXPLORER_SEVERITY, STOCHASTIC_PERIOD, STOCHASTIC_D_PERIOD));
+                stochasticConfig.severity(),
+                stochasticConfig.period(),
+                stochasticConfig.dPeriod(),
+                stochasticConfig.oversoldThreshold(),
+                stochasticConfig.overboughtThreshold(),
+                stochasticConfig.longMediumThreshold(),
+                stochasticConfig.shortMediumThreshold(),
+                stochasticConfig.longMinorThreshold(),
+                stochasticConfig.shortMinorThreshold()));
 
-    var blockers = List.<Blocker>of(new ATRBlocker(ATR_BLOCKER_PERIOD));
+    var blockers = List.<Blocker>of(new ATRBlocker(7)); // TODO: Make this configurable
 
     var binaryStrategy =
         new BinaryStrategy(
-            binaryExplorers, blockers, stopLossRequiredPercentage, stateMultiplierMap);
+            binaryExplorers,
+            blockers,
+            BigDecimal.valueOf(stopLossRequiredPercentage),
+            stateMultiplierMap);
 
     var maximumRequiredPeriodThreshold =
         Stream.concat(
@@ -111,7 +125,7 @@ public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRo
         exchangeOrderClient,
         binaryStrategy,
         symbol,
-        percentagePerDeposit,
+        BigDecimal.valueOf(percentagePerDeposit),
         futuresMultiplier,
         Instant.ofEpochMilli(initialBarsCollectionDate),
         maximumRequiredPeriodThreshold);
