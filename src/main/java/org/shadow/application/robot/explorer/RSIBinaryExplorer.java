@@ -15,43 +15,63 @@ import org.shadow.application.robot.indicator.RSIIndicator;
  * long or short based on the RSI value.
  */
 public class RSIBinaryExplorer implements BinaryExplorer {
-  private final Logger logger = LogManager.getLogger(RSIBinaryExplorer.class);
 
-  // TODO: Make constants below configurable
-  // Valid only for 1-minute timeframe
-  private static final double RSI_OVERSOLD_THRESHOLD = 25.0;
-  // Valid only for 1-minute timeframe
-  private static final double RSI_OVERBOUGHT_THRESHOLD = 75.0;
-  // Valid only for 1-minute timeframe
-  private static final double RSI_LONG_MEDIUM_THRESHOLD = 35.0;
-  // Valid only for 1-minute timeframe
-  private static final double RSI_SHORT_MEDIUM_THRESHOLD = 65.0;
-  // Valid only for 1-minute timeframe
-  private static final double RSI_LONG_MINOR_THRESHOLD = 45.0;
-  // Valid only for 1-minute timeframe
-  private static final double RSI_SHORT_MINOR_THRESHOLD = 55.0;
+  private final Logger logger = LogManager.getLogger(RSIBinaryExplorer.class);
 
   private final Integer severity;
   private final RSIIndicator rsiIndicator;
 
+  private final double oversoldThreshold;
+  private final double overboughtThreshold;
+  private final double longMediumThreshold;
+  private final double shortMediumThreshold;
+  private final double longMinorThreshold;
+  private final double shortMinorThreshold;
+
   /**
-   * Constructs an RSIBinaryExplorer with a specified severity and RSI period.
+   * Constructs an RSIBinaryExplorer with specified parameters.
    *
    * @param severity the severity level of momentum exploration (affects the thresholds)
    * @param period the period for the RSI calculation
+   * @param oversoldThreshold RSI value indicating oversold condition
+   * @param overboughtThreshold RSI value indicating overbought condition
+   * @param longMediumThreshold threshold for medium long signals
+   * @param shortMediumThreshold threshold for medium short signals
+   * @param longMinorThreshold threshold for minor long signals
+   * @param shortMinorThreshold threshold for minor short signals
    */
-  public RSIBinaryExplorer(Integer severity, Integer period) {
+  public RSIBinaryExplorer(
+      Integer severity,
+      Integer period,
+      double oversoldThreshold,
+      double overboughtThreshold,
+      double longMediumThreshold,
+      double shortMediumThreshold,
+      double longMinorThreshold,
+      double shortMinorThreshold) {
+
     this.severity = severity;
     this.rsiIndicator = new RSIIndicator(period);
-    logger.info("RSIBinaryExplorer initialized with severity {} and period {}", severity, period);
+
+    this.oversoldThreshold = oversoldThreshold;
+    this.overboughtThreshold = overboughtThreshold;
+    this.longMediumThreshold = longMediumThreshold;
+    this.shortMediumThreshold = shortMediumThreshold;
+    this.longMinorThreshold = longMinorThreshold;
+    this.shortMinorThreshold = shortMinorThreshold;
+
+    logger.info(
+        "RSIBinaryExplorer initialized with severity {}, period {}, thresholds: oversold={}, overbought={}, longMedium={}, shortMedium={}, longMinor={}, shortMinor={}",
+        severity,
+        period,
+        oversoldThreshold,
+        overboughtThreshold,
+        longMediumThreshold,
+        shortMediumThreshold,
+        longMinorThreshold,
+        shortMinorThreshold);
   }
 
-  /**
-   * Evaluates whether the momentum indicates a long (buy) opportunity based on RSI values.
-   *
-   * @param bars the list of {@link Bar} objects representing market data
-   * @return the momentum state as a {@link BinaryIsMomentumExplorationState} value
-   */
   @Override
   public BinaryIsMomentumExplorationState isMomentumToLong(List<Bar> bars) {
     if (bars == null || bars.size() < rsiIndicator.getPeriod() + 1) {
@@ -64,17 +84,11 @@ public class RSIBinaryExplorer implements BinaryExplorer {
 
     var longState = evaluateLongState(rsi);
 
-    logger.info("Long state: {}, rsi: {}", longState, rsi);
+    logger.info("Long state: {}, RSI: {}", longState, rsi);
 
     return longState;
   }
 
-  /**
-   * Evaluates whether the momentum indicates a short (sell) opportunity based on RSI values.
-   *
-   * @param bars the list of {@link Bar} objects representing market data
-   * @return the momentum state as a {@link BinaryIsMomentumExplorationState} value
-   */
   @Override
   public BinaryIsMomentumExplorationState isMomentumToShort(List<Bar> bars) {
     if (bars == null || bars.size() < rsiIndicator.getPeriod() + 1) {
@@ -85,60 +99,44 @@ public class RSIBinaryExplorer implements BinaryExplorer {
     var prices = extractClosingPrices(bars);
     var rsi = rsiIndicator.calculate(prices);
 
-    logger.info("RSI: {}", rsi);
-
     var shortState = evaluateShortState(rsi);
 
-    logger.info("Short state: {}, rsi: {}", shortState, rsi);
+    logger.info("Short state: {}, RSI: {}", shortState, rsi);
 
     return shortState;
   }
 
-  /**
-   * Returns the severity level of the momentum exploration.
-   *
-   * @return the severity level
-   */
   @Override
   public Integer getSeverity() {
     return severity;
   }
 
-  /**
-   * Returns the RSIIndicator used by this RSIBinaryExplorer.
-   *
-   * @return the RSIIndicator
-   */
   @Override
   public Indicator getIndicator() {
     return rsiIndicator;
   }
 
   private double[] extractClosingPrices(List<Bar> bars) {
-    return bars.stream()
-        .map(Bar::close)
-        .map(BigDecimal::doubleValue)
-        .mapToDouble(Double::doubleValue)
-        .toArray();
+    return bars.stream().map(Bar::close).mapToDouble(BigDecimal::doubleValue).toArray();
   }
 
   private BinaryIsMomentumExplorationState evaluateLongState(double rsi) {
-    if (rsi < RSI_OVERSOLD_THRESHOLD) {
+    if (rsi < oversoldThreshold) {
       return BinaryIsMomentumExplorationState.MAJOR;
-    } else if (rsi < RSI_LONG_MEDIUM_THRESHOLD) {
+    } else if (rsi < longMediumThreshold) {
       return BinaryIsMomentumExplorationState.MEDIUM;
-    } else if (rsi < RSI_LONG_MINOR_THRESHOLD) {
+    } else if (rsi < longMinorThreshold) {
       return BinaryIsMomentumExplorationState.MINOR;
     }
     return BinaryIsMomentumExplorationState.NOT_READY;
   }
 
   private BinaryIsMomentumExplorationState evaluateShortState(double rsi) {
-    if (rsi > RSI_OVERBOUGHT_THRESHOLD) {
+    if (rsi > overboughtThreshold) {
       return BinaryIsMomentumExplorationState.MAJOR;
-    } else if (rsi > RSI_SHORT_MEDIUM_THRESHOLD) {
+    } else if (rsi > shortMediumThreshold) {
       return BinaryIsMomentumExplorationState.MEDIUM;
-    } else if (rsi > RSI_SHORT_MINOR_THRESHOLD) {
+    } else if (rsi > shortMinorThreshold) {
       return BinaryIsMomentumExplorationState.MINOR;
     }
     return BinaryIsMomentumExplorationState.NOT_READY;

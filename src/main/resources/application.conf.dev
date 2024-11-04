@@ -6,13 +6,71 @@ exchange {
 
 robots = [
   {
+    # Basic Configuration
     type = "SINGLE_POSITION"
     unit = "SECONDS"
     interval = 15
     symbol = "BTC/USD"
-    allowedOrderPercentageFromDeposit = 0.1
-    allowedOrderFuturesMultiplier = 1
-    stopLossRequiredPercentage = 0.05
+    orderConfiguration {
+      allowedOrderPercentageFromDeposit = 0.1
+      allowedOrderFuturesMultiplier = 1
+      stopLossRequiredPercentage = 0.05
+    }
     historicalDataFile = "BTCUSDT_1m_2024-03-01-00:00:00_2024-06-01-00:00:00.json"
+
+    # Multipliers for state mapping
+    notReadyMultiplier = 0
+    minorMultiplier = 1
+    mediumMultiplier = 2
+    majorMultiplier = 3
+
+    # RSI Explorer Configuration
+    rsiExplorerConfig {
+      severity = 1
+      period = 7
+      oversoldThreshold = 25.0
+      overboughtThreshold = 75.0
+      longMediumThreshold = 35.0
+      shortMediumThreshold = 65.0
+      longMinorThreshold = 45.0
+      shortMinorThreshold = 55.0
+    }
+
+    # MACD Explorer Configuration
+    macdExplorerConfig {
+      severity = 1
+      shortPeriod = 12
+      longPeriod = 26
+      signalPeriod = 9
+      histogramMajorThreshold = 0.5
+      histogramMediumThreshold = 0.2
+      histogramMinorThreshold = 0.05
+    }
+
+    # Bollinger Bands Explorer Configuration
+    bollingerBandsExplorerConfig {
+      severity = 1
+      period = 20
+      standardDeviationMultiplier = 2.0
+      lowerBandThreshold = 0.0
+      upperBandThreshold = 1.0
+      longMediumThreshold = 0.2
+      shortMediumThreshold = 0.8
+      longMinorThreshold = 0.4
+      shortMinorThreshold = 0.6
+    }
+
+    # Stochastic Oscillator Explorer Configuration
+    stochasticOscillatorExplorerConfig {
+      severity = 1
+      period = 14
+      dPeriod = 3
+      oversoldThreshold = 20.0
+      overboughtThreshold = 80.0
+      longMediumThreshold = 30.0
+      shortMediumThreshold = 70.0
+      longMinorThreshold = 40.0
+      shortMinorThreshold = 60.0
+    }
   }
 ]

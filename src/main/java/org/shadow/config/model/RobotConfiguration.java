@@ -9,4 +9,12 @@ public record RobotConfiguration(
     long interval,
     String symbol,
     OrderConfiguration orderConfiguration,
-    Optional<String> historicalDataFile) {}
+    Optional<String> historicalDataFile,
+    RSIExplorerConfiguration rsiExplorerConfig,
+    MACDExplorerConfiguration macdExplorerConfig,
+    BollingerBandsExplorerConfiguration bollingerBandsExplorerConfig,
+    StochasticOscillatorExplorerConfiguration stochasticOscillatorExplorerConfig,
+    int notReadyMultiplier,
+    int minorMultiplier,
+    int mediumMultiplier,
+    int majorMultiplier) {}
