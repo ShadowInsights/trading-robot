@@ -1,25 +1,24 @@
 package org.shadow.application.robot.explorer;
 
-import java.math.BigDecimal;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.shadow.application.robot.common.model.Bar;
 import org.shadow.application.robot.explorer.model.BinaryIsMomentumExplorationState;
 import org.shadow.application.robot.indicator.Indicator;
-import org.shadow.application.robot.indicator.RSIIndicator;
+import org.shadow.application.robot.indicator.StochasticOscillatorIndicator;
 
 /**
- * This class represents an implementation of a binary momentum explorer using the RSI (Relative
- * Strength Index) indicator. It evaluates whether the market is in a momentum phase to either go
- * long or short based on the RSI value.
+ * This class represents an implementation of a binary momentum explorer using the Stochastic
+ * Oscillator indicator. It evaluates whether the market is in a momentum phase to either go long or
+ * short based on %K and %D values.
  */
-public class RSIBinaryExplorer implements BinaryExplorer {
+public class StochasticOscillatorExplorer implements BinaryExplorer {
 
-  private final Logger logger = LogManager.getLogger(RSIBinaryExplorer.class);
+  private final Logger logger = LogManager.getLogger(StochasticOscillatorExplorer.class);
 
   private final Integer severity;
-  private final RSIIndicator rsiIndicator;
+  private final StochasticOscillatorIndicator stochasticIndicator;
 
   private final double oversoldThreshold;
   private final double overboughtThreshold;
@@ -29,20 +28,22 @@ public class RSIBinaryExplorer implements BinaryExplorer {
   private final double shortMinorThreshold;
 
   /**
-   * Constructs an RSIBinaryExplorer with specified parameters.
+   * Constructs a StochasticOscillatorExplorer with specified parameters.
    *
-   * @param severity the severity level of momentum exploration (affects the thresholds)
-   * @param period the period for the RSI calculation
-   * @param oversoldThreshold RSI value indicating oversold condition
-   * @param overboughtThreshold RSI value indicating overbought condition
+   * @param severity the severity level of momentum exploration
+   * @param period the look-back period for %K calculation
+   * @param dPeriod the period over which to average %K to get %D
+   * @param oversoldThreshold threshold indicating oversold condition
+   * @param overboughtThreshold threshold indicating overbought condition
    * @param longMediumThreshold threshold for medium long signals
    * @param shortMediumThreshold threshold for medium short signals
    * @param longMinorThreshold threshold for minor long signals
    * @param shortMinorThreshold threshold for minor short signals
    */
-  public RSIBinaryExplorer(
+  public StochasticOscillatorExplorer(
       Integer severity,
-      Integer period,
+      int period,
+      int dPeriod,
       double oversoldThreshold,
       double overboughtThreshold,
       double longMediumThreshold,
@@ -51,7 +52,7 @@ public class RSIBinaryExplorer implements BinaryExplorer {
       double shortMinorThreshold) {
 
     this.severity = severity;
-    this.rsiIndicator = new RSIIndicator(period);
+    this.stochasticIndicator = new StochasticOscillatorIndicator(period, dPeriod);
 
     this.oversoldThreshold = oversoldThreshold;
     this.overboughtThreshold = overboughtThreshold;
@@ -61,9 +62,10 @@ public class RSIBinaryExplorer implements BinaryExplorer {
     this.shortMinorThreshold = shortMinorThreshold;
 
     logger.info(
-        "RSIBinaryExplorer initialized with severity {}, period {}, thresholds: oversold={}, overbought={}, longMedium={}, shortMedium={}, longMinor={}, shortMinor={}",
+        "StochasticOscillatorExplorer initialized with severity {}, period {}, dPeriod {}, thresholds: oversold={}, overbought={}, longMedium={}, shortMedium={}, longMinor={}, shortMinor={}",
         severity,
         period,
+        dPeriod,
         oversoldThreshold,
         overboughtThreshold,
         longMediumThreshold,
@@ -74,34 +76,38 @@ public class RSIBinaryExplorer implements BinaryExplorer {
 
   @Override
   public BinaryIsMomentumExplorationState isMomentumToLong(List<Bar> bars) {
-    if (bars == null || bars.size() < rsiIndicator.getPeriod() + 1) {
+    if (bars == null || bars.size() < stochasticIndicator.getRequiredPeriodThreshold()) {
       logger.warn("Bars list is null or has insufficient data");
       return BinaryIsMomentumExplorationState.NOT_READY;
     }
 
-    var prices = extractClosingPrices(bars);
-    var rsi = rsiIndicator.calculate(prices);
+    var result = stochasticIndicator.calculate(bars);
 
-    var longState = evaluateLongState(rsi);
+    var percentK = result.percentK();
+    var percentD = result.percentD();
 
-    logger.info("Long state: {}, RSI: {}", longState, rsi);
+    var longState = evaluateLongState(percentK, percentD);
+
+    logger.info("Long state: {}, %K: {}, %D: {}", longState, percentK, percentD);
 
     return longState;
   }
 
   @Override
   public BinaryIsMomentumExplorationState isMomentumToShort(List<Bar> bars) {
-    if (bars == null || bars.size() < rsiIndicator.getPeriod() + 1) {
+    if (bars == null || bars.size() < stochasticIndicator.getRequiredPeriodThreshold()) {
       logger.warn("Bars list is null or has insufficient data");
       return BinaryIsMomentumExplorationState.NOT_READY;
     }
 
-    var prices = extractClosingPrices(bars);
-    var rsi = rsiIndicator.calculate(prices);
+    var result = stochasticIndicator.calculate(bars);
 
-    var shortState = evaluateShortState(rsi);
+    var percentK = result.percentK();
+    var percentD = result.percentD();
 
-    logger.info("Short state: {}, RSI: {}", shortState, rsi);
+    var shortState = evaluateShortState(percentK, percentD);
+
+    logger.info("Short state: {}, %K: {}, %D: {}", shortState, percentK, percentD);
 
     return shortState;
   }
@@ -113,30 +119,26 @@ public class RSIBinaryExplorer implements BinaryExplorer {
 
   @Override
   public Indicator getIndicator() {
-    return rsiIndicator;
+    return stochasticIndicator;
   }
 
-  private double[] extractClosingPrices(List<Bar> bars) {
-    return bars.stream().map(Bar::close).mapToDouble(BigDecimal::doubleValue).toArray();
-  }
-
-  private BinaryIsMomentumExplorationState evaluateLongState(double rsi) {
-    if (rsi < oversoldThreshold) {
+  private BinaryIsMomentumExplorationState evaluateLongState(double percentK, double percentD) {
+    if (percentK < oversoldThreshold && percentK > percentD) {
       return BinaryIsMomentumExplorationState.MAJOR;
-    } else if (rsi < longMediumThreshold) {
+    } else if (percentK < longMediumThreshold && percentK > percentD) {
       return BinaryIsMomentumExplorationState.MEDIUM;
-    } else if (rsi < longMinorThreshold) {
+    } else if (percentK < longMinorThreshold && percentK > percentD) {
       return BinaryIsMomentumExplorationState.MINOR;
     }
     return BinaryIsMomentumExplorationState.NOT_READY;
   }
 
-  private BinaryIsMomentumExplorationState evaluateShortState(double rsi) {
-    if (rsi > overboughtThreshold) {
+  private BinaryIsMomentumExplorationState evaluateShortState(double percentK, double percentD) {
+    if (percentK > overboughtThreshold && percentK < percentD) {
       return BinaryIsMomentumExplorationState.MAJOR;
-    } else if (rsi > shortMediumThreshold) {
+    } else if (percentK > shortMediumThreshold && percentK < percentD) {
       return BinaryIsMomentumExplorationState.MEDIUM;
-    } else if (rsi > shortMinorThreshold) {
+    } else if (percentK > shortMinorThreshold && percentK < percentD) {
       return BinaryIsMomentumExplorationState.MINOR;
     }
     return BinaryIsMomentumExplorationState.NOT_READY;
