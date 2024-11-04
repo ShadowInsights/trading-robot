@@ -2,6 +2,7 @@ exchange {
   type = "FAKE"
   apiKey = "dev-api-key"
   apiSecret = "dev-api-secret"
+  virtualAccountInitialBalance = 10000.0
 }
 
 robots = [
@@ -9,7 +10,7 @@ robots = [
     # Basic Configuration
     type = "SINGLE_POSITION"
     unit = "SECONDS"
-    interval = 15
+    interval = 1
     symbol = "BTC/USD"
     orderConfiguration {
       allowedOrderPercentageFromDeposit = 0.1
