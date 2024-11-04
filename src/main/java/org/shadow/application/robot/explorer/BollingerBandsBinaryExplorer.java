@@ -20,10 +20,18 @@ public class BollingerBandsBinaryExplorer implements BinaryExplorer {
   private final Logger logger = LogManager.getLogger(BollingerBandsBinaryExplorer.class);
 
   // TODO: Make constants below configurable
-  private static final double OVERSOLD_THRESHOLD = 0.0;
-  private static final double OVERBOUGHT_THRESHOLD = 0.0;
-  private static final double NEAR_LOWER_BAND_THRESHOLD = 0.3;
-  private static final double NEAR_UPPER_BAND_THRESHOLD = 0.7;
+  // Valid only for 1-minute timeframe
+  private static final double BB_LOWER_BAND_THRESHOLD = 0.0;
+  // Valid only for 1-minute timeframe
+  private static final double BB_UPPER_BAND_THRESHOLD = 1.0;
+  // Valid only for 1-minute timeframe
+  private static final double BB_LONG_MEDIUM_THRESHOLD = 0.2;
+  // Valid only for 1-minute timeframe
+  private static final double BB_SHORT_MEDIUM_THRESHOLD = 0.8;
+  // Valid only for 1-minute timeframe
+  private static final double BB_LONG_MINOR_THRESHOLD = 0.4;
+  // Valid only for 1-minute timeframe
+  private static final double BB_SHORT_MINOR_THRESHOLD = 0.6;
 
   private final Integer severity;
   private final BollingerBandsIndicator bollingerBandsIndicator;
@@ -138,19 +146,23 @@ public class BollingerBandsBinaryExplorer implements BinaryExplorer {
   }
 
   private BinaryIsMomentumExplorationState evaluateLongState(double position) {
-    if (position < OVERSOLD_THRESHOLD) {
+    if (position <= BB_LOWER_BAND_THRESHOLD) {
       return BinaryIsMomentumExplorationState.MAJOR;
-    } else if (position <= NEAR_LOWER_BAND_THRESHOLD) {
+    } else if (position <= BB_LONG_MEDIUM_THRESHOLD) {
       return BinaryIsMomentumExplorationState.MEDIUM;
+    } else if (position <= BB_LONG_MINOR_THRESHOLD) {
+      return BinaryIsMomentumExplorationState.MINOR;
     }
     return BinaryIsMomentumExplorationState.NOT_READY;
   }
 
   private BinaryIsMomentumExplorationState evaluateShortState(double position) {
-    if (position > 1 + OVERBOUGHT_THRESHOLD) {
+    if (position >= BB_UPPER_BAND_THRESHOLD) {
       return BinaryIsMomentumExplorationState.MAJOR;
-    } else if (position >= NEAR_UPPER_BAND_THRESHOLD) {
+    } else if (position >= BB_SHORT_MEDIUM_THRESHOLD) {
       return BinaryIsMomentumExplorationState.MEDIUM;
+    } else if (position >= BB_SHORT_MINOR_THRESHOLD) {
+      return BinaryIsMomentumExplorationState.MINOR;
     }
     return BinaryIsMomentumExplorationState.NOT_READY;
   }
