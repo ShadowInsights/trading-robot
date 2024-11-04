@@ -13,6 +13,7 @@ import org.shadow.application.robot.blocker.Blocker;
 import org.shadow.application.robot.explorer.BollingerBandsBinaryExplorer;
 import org.shadow.application.robot.explorer.MACDBinaryExplorer;
 import org.shadow.application.robot.explorer.RSIBinaryExplorer;
+import org.shadow.application.robot.explorer.StochasticOscillatorExplorer;
 import org.shadow.application.robot.explorer.model.BinaryIsMomentumExplorationState;
 import org.shadow.application.robot.strategy.BinaryStrategy;
 import org.shadow.config.model.RobotConfiguration;
@@ -42,6 +43,11 @@ public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRo
   public static final int BOLLINGER_PERIOD = 20;
   public static final double BOLLINGER_STD_DEV_MULTIPLIER = 2.0;
 
+  // Constants for Stochastic Oscillator Explorer
+  public static final int STOCHASTIC_EXPLORER_SEVERITY = 1;
+  public static final int STOCHASTIC_PERIOD = 14;
+  public static final int STOCHASTIC_D_PERIOD = 3;
+
   // Valid only for 1-minute timeframe
   private static final int ATR_BLOCKER_PERIOD = 7;
 
@@ -50,28 +56,25 @@ public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRo
       RobotConfiguration robotConfiguration,
       BarsCollectorClient barsCollectorClient,
       ExchangeOrderClient exchangeOrderClient) {
+
     var robotTimeframe =
         new RobotTimeframe(robotConfiguration.unit(), robotConfiguration.interval());
+
     var symbol = robotConfiguration.symbol();
     var percentagePerDeposit =
         robotConfiguration.orderConfiguration().allowedOrderPercentageFromDeposit();
     var futuresMultiplier = robotConfiguration.orderConfiguration().allowedOrderFuturesMultiplier();
-
     var stopLossRequiredPercentage =
         robotConfiguration.orderConfiguration().stopLossRequiredPercentage();
 
-    var binaryIsMomentumExplorationStateIntegerMultiplierMap =
+    var stateMultiplierMap =
         new EnumMap<BinaryIsMomentumExplorationState, Integer>(
             BinaryIsMomentumExplorationState.class);
 
-    binaryIsMomentumExplorationStateIntegerMultiplierMap.put(
-        BinaryIsMomentumExplorationState.NOT_READY, NOT_READY_MULTIPLIER);
-    binaryIsMomentumExplorationStateIntegerMultiplierMap.put(
-        BinaryIsMomentumExplorationState.MINOR, MINOR_MULTIPLIER);
-    binaryIsMomentumExplorationStateIntegerMultiplierMap.put(
-        BinaryIsMomentumExplorationState.MEDIUM, MEDIUM_MULTIPLIER);
-    binaryIsMomentumExplorationStateIntegerMultiplierMap.put(
-        BinaryIsMomentumExplorationState.MAJOR, MAJOR_MULTIPLIER);
+    stateMultiplierMap.put(BinaryIsMomentumExplorationState.NOT_READY, NOT_READY_MULTIPLIER);
+    stateMultiplierMap.put(BinaryIsMomentumExplorationState.MINOR, MINOR_MULTIPLIER);
+    stateMultiplierMap.put(BinaryIsMomentumExplorationState.MEDIUM, MEDIUM_MULTIPLIER);
+    stateMultiplierMap.put(BinaryIsMomentumExplorationState.MAJOR, MAJOR_MULTIPLIER);
 
     var binaryExplorers =
         List.of(
@@ -79,22 +82,20 @@ public class SinglePositionRobotFactory implements RobotFactory<SinglePositionRo
             new MACDBinaryExplorer(
                 MACD_EXPLORER_SEVERITY, MACD_SHORT_PERIOD, MACD_LONG_PERIOD, MACD_SIGNAL_PERIOD),
             new BollingerBandsBinaryExplorer(
-                BOLLINGER_EXPLORER_SEVERITY, BOLLINGER_PERIOD, BOLLINGER_STD_DEV_MULTIPLIER));
+                BOLLINGER_EXPLORER_SEVERITY, BOLLINGER_PERIOD, BOLLINGER_STD_DEV_MULTIPLIER),
+            new StochasticOscillatorExplorer(
+                STOCHASTIC_EXPLORER_SEVERITY, STOCHASTIC_PERIOD, STOCHASTIC_D_PERIOD));
 
     var blockers = List.<Blocker>of(new ATRBlocker(ATR_BLOCKER_PERIOD));
+
     var binaryStrategy =
         new BinaryStrategy(
-            binaryExplorers,
-            blockers,
-            stopLossRequiredPercentage,
-            binaryIsMomentumExplorationStateIntegerMultiplierMap);
+            binaryExplorers, blockers, stopLossRequiredPercentage, stateMultiplierMap);
 
     var maximumRequiredPeriodThreshold =
         Stream.concat(
                 binaryExplorers.stream()
-                    .map(
-                        binaryExplorer ->
-                            binaryExplorer.getIndicator().getRequiredPeriodThreshold()),
+                    .map(explorer -> explorer.getIndicator().getRequiredPeriodThreshold()),
                 blockers.stream()
                     .map(blocker -> blocker.getIndicator().getRequiredPeriodThreshold()))
             .max(Integer::compare)
