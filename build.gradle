@@ -16,13 +16,6 @@ repositories {
     mavenCentral()
 }
 
-shadowJar {
-    archiveClassifier.set('')
-    manifest {
-        attributes('Main-Class': 'org.shadow.Main')
-    }
-}
-
 dependencies {
     implementation 'com.typesafe:config:1.4.3'
     implementation platform('org.apache.logging.log4j:log4j-bom:2.23.1')
@@ -32,6 +25,13 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.17.2'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.17.2'
     implementation 'org.apache.commons:commons-collections4:4.4'
+
+    // Hibernate and JPA dependencies
+    implementation 'org.hibernate.orm:hibernate-core:6.2.6.Final'
+    implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+
+    // SQLite JDBC driver
+    implementation 'org.xerial:sqlite-jdbc:3.43.0'
 
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -44,6 +44,13 @@ test {
     useJUnitPlatform()
 }
 
+shadowJar {
+    archiveClassifier.set('')
+    manifest {
+        attributes('Main-Class': 'org.shadow.Main')
+    }
+}
+
 spotless {
     java {
         googleJavaFormat('1.17.0') // Use Google's Java formatter
@@ -51,8 +58,25 @@ spotless {
     }
 }
 
+tasks.register('copyHistoricalDataToResources', Copy) {
+    from 'historical-data'
+    into 'src/main/resources/historical-data'
+
+    doFirst {
+        println 'Copying historical-data to resources for development mode...'
+    }
+}
+
 tasks.register('runInDevelopmentMode', JavaExec) {
     mainClass = 'org.shadow.Main'
     classpath = sourceSets.main.runtimeClasspath
     jvmArgs = ['-Dconfig.file=src/main/resources/application.conf.dev']
+
+    processResources.dependsOn copyHistoricalDataToResources
+    dependsOn 'copyHistoricalDataToResources'
+
+    doLast {
+        println 'Cleaning up historical-data from resources...'
+        delete fileTree('src/main/resources/historical-data')
+    }
 }

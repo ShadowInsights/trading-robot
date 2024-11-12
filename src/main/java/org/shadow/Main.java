@@ -40,12 +40,8 @@ public class Main {
       logger.info("Configuration is valid.");
     }
 
-    final var exchangeOrderClient = createExchangeOrderClient(config.exchangeConfiguration());
-
     // Create robots from configuration
-    final var robots =
-        createRobots(
-            config.robotConfigurations(), config.exchangeConfiguration(), exchangeOrderClient);
+    final var robots = createRobots(config.robotConfigurations(), config.exchangeConfiguration());
     logger.info("Created {} robots", robots.size());
 
     // Create schedulers for each robot
@@ -80,12 +76,13 @@ public class Main {
   }
 
   private static ExchangeOrderClient createExchangeOrderClient(
-      ExchangeConfiguration exchangeConfiguration) {
+      BarsCollectorClient barsCollectorClient, ExchangeConfiguration exchangeConfiguration) {
     var fakeExchangeOrderClientFactory = new FakeExchangeOrderClientFactory();
 
     var client =
         switch (exchangeConfiguration.type()) {
-          case FAKE -> fakeExchangeOrderClientFactory.createClient(exchangeConfiguration);
+          case FAKE -> fakeExchangeOrderClientFactory.createClient(
+              barsCollectorClient, exchangeConfiguration);
         };
 
     client.init();
@@ -94,9 +91,7 @@ public class Main {
   }
 
   private static List<Robot> createRobots(
-      List<RobotConfiguration> robotConfigurations,
-      ExchangeConfiguration exchangeConfiguration,
-      ExchangeOrderClient exchangeOrderClient) {
+      List<RobotConfiguration> robotConfigurations, ExchangeConfiguration exchangeConfiguration) {
     var singlePositionRobotFactory = new SinglePositionRobotFactory();
 
     return robotConfigurations.stream()
@@ -107,6 +102,9 @@ public class Main {
                     final var barsCollectorClient =
                         createBarsCollectorClient(exchangeConfiguration, robotConfiguration);
                     barsCollectorClient.init();
+                    final var exchangeOrderClient =
+                        createExchangeOrderClient(barsCollectorClient, exchangeConfiguration);
+                    exchangeOrderClient.init();
                     yield singlePositionRobotFactory.createRobot(
                         robotConfiguration, barsCollectorClient, exchangeOrderClient);
                   }
